@@ -1,2 +1,2 @@
 # SpendWise
-SpendWise tracks all your expenses and provides graphical data for all expense categorires.
+SpendWise tracks all your expenses and provides graphical data for all expense categories.
