@@ -54,6 +54,7 @@ fun SpendWiseTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = PoppinsTypography,
+        shapes = shapes,
         content = content
     )
 }

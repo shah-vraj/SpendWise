@@ -1,7 +1,8 @@
 package com.vraj.spendwise.di
 
 import android.content.Context
-import com.vraj.spendwise.data.db.AppDatabase
+import com.vraj.spendwise.data.local.AppDatabase
+import com.vraj.spendwise.data.local.dao.ExpenseDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,4 +22,9 @@ object AppModule {
     @Provides
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
         AppDatabase.buildDatabase(context)
+
+    @Singleton
+    @Provides
+    fun provideExpenseDao(appDatabase: AppDatabase): ExpenseDao =
+        appDatabase.expenseDao()
 }

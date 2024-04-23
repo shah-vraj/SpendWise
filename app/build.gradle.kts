@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.jetbrainsKotlinKapt)
     alias(libs.plugins.hiltAndroid)
-//    alias(libs.plugins.googleKsp)
 }
 
 android {
@@ -62,6 +61,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.navigation.compose)
 
     // Test
     testImplementation(libs.junit)
@@ -73,12 +73,9 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     // Dependency Injection
-    implementation(libs.hilt.android)
-    kapt(libs.hilt.android.compiler)
-    implementation(libs.androidx.hilt.work)
-    kapt(libs.androidx.hilt.compiler)
-    implementation(libs.androidx.work.runtime.ktx)
-    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.hilt)
+    kapt(libs.hilt.dagger.compiler)
+    kapt(libs.hilt.compiler)
 
     // Lifecycle
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -89,4 +86,7 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     kapt(libs.room.compiler)
+
+    // Toast
+    implementation(libs.toasty)
 }

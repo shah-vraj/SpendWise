@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">SpendWise</string>
+    <string name="txt_expense_type">Expense Type</string>
+    <string name="txt_amount">Amount</string>
+    <string name="txt_add_expense">Add Expense</string>
+    <string name="txt_show_expense">Show Expenses</string>
+    <string name="txt_recents">Recents</string>
+    <string name="invalid_input_error">Invalid input provided, please try again!</string>
+    <string name="add_expense_success">Successfully added expense</string>
 </resources>
