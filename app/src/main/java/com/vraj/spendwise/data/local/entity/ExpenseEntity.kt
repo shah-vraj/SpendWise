@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Entity(tableName = "UserExpense")
 data class ExpenseEntity(
@@ -19,4 +20,7 @@ data class ExpenseEntity(
 
     @ColumnInfo("amount")
     val amount: Double
-)
+) {
+    val createdDateFormatted : String
+        get() = date.format(DateTimeFormatter.ofPattern("dd LLLL yyyy"))
+}

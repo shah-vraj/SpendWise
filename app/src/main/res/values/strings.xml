@@ -5,6 +5,10 @@
     <string name="txt_add_expense">Add Expense</string>
     <string name="txt_show_expense">Show Expenses</string>
     <string name="txt_recents">Recents</string>
+    <string name="txt_load_more">Load more</string>
     <string name="invalid_input_error">Invalid input provided, please try again!</string>
     <string name="add_expense_success">Successfully added expense</string>
+    <string name="remove_expense_success">Successfully removed expense</string>
+    <string name="txt_add_again">Add again</string>
+    <string name="txt_remove">Remove</string>
 </resources>

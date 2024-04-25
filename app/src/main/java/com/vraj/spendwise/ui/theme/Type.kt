@@ -24,12 +24,22 @@ val PoppinsTypography = Typography(
     titleLarge = TextStyle(
         fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Medium,
-        fontSize = 20.sp
+        fontSize = 24.sp
     ),
-    titleSmall = TextStyle(
+    titleMedium = TextStyle(
         fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 16.sp
+    ),
+    titleSmall = TextStyle(
+        fontFamily = PoppinsFontFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp
+    ),
+    labelLarge = TextStyle(
+        fontFamily = PoppinsFontFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 20.sp
     ),
     labelMedium = TextStyle(
         fontFamily = PoppinsFontFamily,

@@ -2,29 +2,37 @@ package com.vraj.spendwise.data.local.repository
 
 import com.vraj.spendwise.data.local.dao.ExpenseDao
 import com.vraj.spendwise.data.local.entity.ExpenseEntity
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 interface ExpenseRepository {
-    suspend fun addExpense(expenseEntity: ExpenseEntity)
+    suspend fun addExpense(name: String, amount: Double)
 
-    suspend fun getExpense(name: String): ExpenseEntity?
+    suspend fun getLastExpense(): ExpenseEntity?
 
-    suspend fun updateExpense(name: String, amount: Double)
+    suspend fun getRecentExpenses(limit: Int, offset: Int): List<ExpenseEntity>
+
+    suspend fun totalCount(): Flow<Int>
+
+    suspend fun removeExpense(id: Int)
 }
 
 class ExpenseRepositoryImpl @Inject constructor(
     private val expenseDao: ExpenseDao
 ) : ExpenseRepository {
 
-    override suspend fun addExpense(expenseEntity: ExpenseEntity) {
-        expenseDao.addExpense(expenseEntity)
-    }
+    override suspend fun addExpense(name: String, amount: Double) =
+        expenseDao.addExpense(ExpenseEntity(name = name, amount = amount))
 
-    override suspend fun getExpense(name: String): ExpenseEntity? {
-        return expenseDao.getExpense(name)
-    }
+    override suspend fun getLastExpense(): ExpenseEntity? =
+        expenseDao.getLastExpense()
 
-    override suspend fun updateExpense(name: String, amount: Double) {
-        return expenseDao.updateExpense(name, amount)
-    }
+    override suspend fun getRecentExpenses(limit: Int, offset: Int): List<ExpenseEntity> =
+        expenseDao.getRecentExpenses(limit, offset)
+
+    override suspend fun totalCount(): Flow<Int> =
+        expenseDao.totalCount()
+
+    override suspend fun removeExpense(id: Int) =
+        expenseDao.removeExpense(id)
 }
