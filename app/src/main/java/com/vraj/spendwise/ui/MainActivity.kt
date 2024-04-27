@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import com.vraj.spendwise.ui.base.BaseComposeActivity
 import com.vraj.spendwise.ui.inputexpense.InputExpenseScreen
 import com.vraj.spendwise.ui.theme.SpendWiseTheme
+import com.vraj.spendwise.ui.totalexpenses.TotalExpensesScreen
 import com.vraj.spendwise.util.MainScreen
 import com.vraj.spendwise.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -54,8 +55,8 @@ fun MainScreens(
         composable(MainScreen.InputExpenseScreen.route) {
             InputExpenseScreen(navHostController, viewModel)
         }
-        composable(MainScreen.GraphicalDataScreen.route) {
-
+        composable(MainScreen.TotalExpensesScreen.route) {
+            TotalExpensesScreen(navHostController, viewModel)
         }
     }
 }

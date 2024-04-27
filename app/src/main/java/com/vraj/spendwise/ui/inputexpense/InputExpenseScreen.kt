@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,15 +16,11 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGri
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -51,6 +46,7 @@ import androidx.navigation.NavHostController
 import com.vraj.spendwise.R
 import com.vraj.spendwise.data.local.entity.ExpenseEntity
 import com.vraj.spendwise.ui.base.BaseButton
+import com.vraj.spendwise.ui.base.BaseModalBottomSheet
 import com.vraj.spendwise.ui.base.BaseTextField
 import com.vraj.spendwise.ui.theme.BaseGreen
 import com.vraj.spendwise.ui.theme.BlueText
@@ -184,7 +180,7 @@ private fun AddOrViewExpenseButtonsBlock(
             backgroundColor = LightGray,
             textColor = BlueText
         ) {
-            navHostController.navigate(MainScreen.GraphicalDataScreen.route)
+            navHostController.navigate(MainScreen.TotalExpensesScreen.route)
         }
     }
 }
@@ -297,21 +293,13 @@ private fun RecentExpensesGridBlock(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun RecentExpensesBottomSheet(
     expenseEntity: ExpenseEntity,
     viewModel: MainViewModel,
     onDismiss: () -> Unit
 ) {
-    val sheetSate = rememberModalBottomSheetState()
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetSate,
-        shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
-        containerColor = Color.White,
-        dragHandle = { RecentExpensesBottomSheetDragHandle() }
-    ) {
+    BaseModalBottomSheet(onDismiss = { onDismiss() }) {
         Column(
             verticalArrangement = Arrangement.spacedBy(40.dp),
             modifier = Modifier
@@ -369,23 +357,5 @@ private fun RecentExpensesBottomSheet(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun RecentExpensesBottomSheetDragHandle() {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 15.dp, bottom = 30.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .width(32.dp)
-                .height(4.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(BlueText)
-        )
     }
 }

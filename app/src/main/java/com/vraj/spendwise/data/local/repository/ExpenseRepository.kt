@@ -15,6 +15,12 @@ interface ExpenseRepository {
     suspend fun totalCount(): Flow<Int>
 
     suspend fun removeExpense(id: Int)
+
+    suspend fun getDistinctMonthsAndYears(): List<ExpenseEntity.MonthAndYear>
+
+    suspend fun getDataForMonthAndYear(month: String, year: String): List<ExpenseEntity>
+
+    suspend fun getAllExpenses(): List<ExpenseEntity>
 }
 
 class ExpenseRepositoryImpl @Inject constructor(
@@ -35,4 +41,13 @@ class ExpenseRepositoryImpl @Inject constructor(
 
     override suspend fun removeExpense(id: Int) =
         expenseDao.removeExpense(id)
+
+    override suspend fun getDistinctMonthsAndYears(): List<ExpenseEntity.MonthAndYear> =
+        expenseDao.getDistinctMonthsAndYears()
+
+    override suspend fun getDataForMonthAndYear(month: String, year: String): List<ExpenseEntity> =
+        expenseDao.getDataForMonthAndYear(month, year)
+
+    override suspend fun getAllExpenses(): List<ExpenseEntity> =
+        expenseDao.getAllExpenses()
 }

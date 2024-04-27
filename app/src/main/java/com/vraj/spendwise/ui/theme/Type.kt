@@ -55,5 +55,10 @@ val PoppinsTypography = Typography(
         fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp
+    ),
+    bodyLarge = TextStyle(
+        fontFamily = PoppinsFontFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 15.sp
     )
 )

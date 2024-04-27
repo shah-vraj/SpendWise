@@ -7,6 +7,7 @@ import com.vraj.spendwise.data.local.entity.ExpenseEntity
 import com.vraj.spendwise.data.local.repository.ExpenseRepository
 import com.vraj.spendwise.di.IoDispatcher
 import com.vraj.spendwise.util.AppToast
+import com.vraj.spendwise.util.MonthOfYear
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,6 +15,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -42,8 +46,26 @@ class MainViewModel @Inject constructor(
     private val _expenseBottomSheetState = MutableStateFlow<Pair<Boolean, ExpenseEntity?>>(false to null)
     val expenseBottomSheetState = _expenseBottomSheetState.asStateFlow()
 
+    private val _showMonthFilterBottomSheet = MutableStateFlow(false)
+    val showMonthFilterBottomSheet = _showMonthFilterBottomSheet.asStateFlow()
+
+    private val _monthAndYears = MutableStateFlow<List<String>>(emptyList())
+    val monthAndYears = _monthAndYears.asStateFlow()
+
+    private val _selectedMonthAndYear = MutableStateFlow("")
+    val selectedMonthAndYear = _selectedMonthAndYear.asStateFlow()
+
+    private val _filteredExpenses = MutableStateFlow<List<ExpenseEntity>>(emptyList())
+    val filteredExpenses = _filteredExpenses.asStateFlow()
+
+    private val currentMonthAndYearString: String
+        get() = SimpleDateFormat("LLLL yyyy", Locale.getDefault())
+            .format(Calendar.getInstance().time)
+
     init {
         loadRecentExpenses()
+        loadMonthAndYears()
+        setCurrentMonthAndYearAsSelected()
         viewModelScope.launch {
             expenses.combine(expenseRepository.totalCount()) { expenses, totalExpenses ->
                 expenses.size != totalExpenses
@@ -119,6 +141,19 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun showMonthFilterBottomSheet(shouldShow: Boolean) {
+        _showMonthFilterBottomSheet.value = shouldShow
+    }
+
+    fun setCurrentMonthAndYearAsSelected() {
+        setSelectedMonthAndYear(currentMonthAndYearString)
+    }
+
+    fun setSelectedMonthAndYear(selectedMonthAndYear: String) {
+        _selectedMonthAndYear.value = selectedMonthAndYear
+        updateFilteredExpenses(selectedMonthAndYear)
+    }
+
     private suspend fun addExpense(name: String, amount: Double) {
         expenseRepository.addExpense(name = name, amount = amount)
         expenseRepository.getLastExpense()?.let {
@@ -128,10 +163,56 @@ class MainViewModel @Inject constructor(
             }
         }
         currentOffset++
+        _expenseType.value = ""
+        _amount.value = ""
+    }
+
+    private fun loadMonthAndYears() {
+        viewModelScope.launch(ioDispatcher) {
+            _monthAndYears.value = expenseRepository
+                .getDistinctMonthsAndYears()
+                .map { it.fullString }
+                .let {
+                    buildList {
+                        addAll(it)
+                        if (!it.contains(currentMonthAndYearString))
+                            add(currentMonthAndYearString)
+                        add(ALL_TIME_EXPENSES)
+                    }
+                }
+        }
+    }
+
+    private fun updateFilteredExpenses(monthAndYearString: String) {
+        viewModelScope.launch(ioDispatcher) {
+            _filteredExpenses.value = when (monthAndYearString) {
+                ALL_TIME_EXPENSES -> expenseRepository.getAllExpenses()
+                else -> {
+                    val (month, year) = monthAndYearString.split("\\s+".toRegex())
+                    val numericMonth = MonthOfYear.getNumericStringFromMonthString(month)
+                    expenseRepository.getDataForMonthAndYear(numericMonth, year)
+                }
+            }.groupByExpenses().sortedByDescending { it.amount }
+        }
+    }
+
+    private fun List<ExpenseEntity>.groupByExpenses(): List<ExpenseEntity> = buildList {
+        this@groupByExpenses.groupBy(ExpenseEntity::name)
+            .mapValues {
+                add(
+                    ExpenseEntity(
+                        name = it.key,
+                        amount = it.value
+                            .map { entity -> entity.amount }
+                            .sumOf { amount -> amount }
+                    )
+                )
+            }
     }
 
     companion object {
         private const val RECENT_EXPENSES_FETCH_LIMIT = 10
+        private const val ALL_TIME_EXPENSES = "All time"
         const val NUMBER_OF_ROWS_OF_RECENT_EXPENSES = 3
         const val SPACING_BETWEEN_ROWS_OF_RECENT_EXPENSES = 15
         const val RECENT_EXPENSE_SINGLE_ITEM_HEIGHT = 45
