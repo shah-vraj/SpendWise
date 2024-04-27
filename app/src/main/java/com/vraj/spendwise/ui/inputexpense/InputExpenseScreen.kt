@@ -30,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -44,13 +43,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import com.vraj.spendwise.R
-import com.vraj.spendwise.data.local.entity.ExpenseEntity
 import com.vraj.spendwise.ui.base.BaseButton
 import com.vraj.spendwise.ui.base.BaseModalBottomSheet
 import com.vraj.spendwise.ui.base.BaseTextField
-import com.vraj.spendwise.ui.theme.BaseGreen
-import com.vraj.spendwise.ui.theme.BlueText
-import com.vraj.spendwise.ui.theme.LightGray
 import com.vraj.spendwise.util.AppToast
 import com.vraj.spendwise.util.MainScreen
 import com.vraj.spendwise.util.extension.toStringByLimitingDecimalDigits
@@ -63,23 +58,8 @@ import es.dmoral.toasty.Toasty
 @Composable
 fun InputExpenseScreen(navHostController: NavHostController, viewModel: MainViewModel) {
     val scrollState = rememberScrollState()
-    val context = LocalContext.current
-    val showToast by viewModel.showToast.collectAsState()
-    val expenseBottomSheetState by viewModel.expenseBottomSheetState.collectAsState()
-
-    when (val toast = showToast) {
-        is AppToast.Error -> Toasty.error(context, toast.message).show()
-        is AppToast.Success -> Toasty.success(context, toast.message).show()
-        AppToast.Nothing -> { }
-    }.also { viewModel.onToastShown() }
-
-    if (expenseBottomSheetState.first) {
-        expenseBottomSheetState.second?.let {
-            RecentExpensesBottomSheet(it, viewModel) {
-                viewModel.showExpenseBottomSheet(false, null)
-            }
-        }
-    }
+    HandleToast(viewModel)
+    ShowRecentExpensesBottomSheetWhenNeeded(viewModel)
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -125,8 +105,7 @@ private fun ExpenseInputBlock(viewModel: MainViewModel, modifier: Modifier = Mod
 
     Column(
         verticalArrangement = Arrangement.spacedBy(20.dp),
-        modifier = modifier
-            .fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         BaseTextField(
             textFieldValue = expenseType,
@@ -167,8 +146,7 @@ private fun AddOrViewExpenseButtonsBlock(
 
     Column(
         verticalArrangement = Arrangement.spacedBy(20.dp),
-        modifier = modifier
-            .fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         BaseButton(text = stringResource(id = R.string.txt_add_expense)) {
             viewModel.validateInputAndAddToDatabase()
@@ -177,8 +155,8 @@ private fun AddOrViewExpenseButtonsBlock(
 
         BaseButton(
             text = stringResource(id = R.string.txt_show_expense),
-            backgroundColor = LightGray,
-            textColor = BlueText
+            backgroundColor = MaterialTheme.colorScheme.background,
+            textColor = MaterialTheme.colorScheme.onPrimary
         ) {
             navHostController.navigate(MainScreen.TotalExpensesScreen.route)
         }
@@ -189,8 +167,7 @@ private fun AddOrViewExpenseButtonsBlock(
 private fun RecentExpensesListBlock(viewModel: MainViewModel, modifier: Modifier) {
     Column(
         verticalArrangement = Arrangement.spacedBy(15.dp),
-        modifier = modifier
-            .fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         RecentExpensesTitleBlock(viewModel)
 
@@ -222,13 +199,13 @@ private fun RecentExpensesTitleBlock(
         Text(
             text = stringResource(id = R.string.txt_recents),
             style = MaterialTheme.typography.titleMedium,
-            color = BlueText
+            color = MaterialTheme.colorScheme.onPrimary
         )
 
         Text(
             text = stringResource(id = R.string.txt_load_more),
             style = MaterialTheme.typography.titleMedium,
-            color = BaseGreen,
+            color = MaterialTheme.colorScheme.secondary,
             modifier = Modifier
                 .clickable(
                     interactionSource = interactionSource,
@@ -253,8 +230,7 @@ private fun RecentExpensesGridBlock(
         rows = StaggeredGridCells.Fixed(NUMBER_OF_ROWS_OF_RECENT_EXPENSES),
         horizontalItemSpacing = 20.dp,
         verticalArrangement = Arrangement.spacedBy(SPACING_BETWEEN_ROWS_OF_RECENT_EXPENSES.dp),
-        modifier = modifier
-            .fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         items(expenses) {
             Row(
@@ -269,10 +245,10 @@ private fun RecentExpensesGridBlock(
                     text = it.name,
                     style = MaterialTheme.typography.labelSmall,
                     textAlign = TextAlign.Center,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .clip(MaterialTheme.shapes.extraSmall)
-                        .background(BaseGreen)
+                        .background(MaterialTheme.colorScheme.secondary)
                         .padding(12.dp)
                         .zIndex(1f)
                 )
@@ -281,10 +257,10 @@ private fun RecentExpensesGridBlock(
                     text = it.amount.toStringByLimitingDecimalDigits(3),
                     style = MaterialTheme.typography.labelSmall,
                     textAlign = TextAlign.Center,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .clip(MaterialTheme.shapes.extraSmall)
-                        .background(Color.Black)
+                        .background(MaterialTheme.colorScheme.primaryContainer)
                         .padding(vertical = 12.dp)
                         .padding(start = 24.dp, end = 12.dp)
                 )
@@ -294,12 +270,26 @@ private fun RecentExpensesGridBlock(
 }
 
 @Composable
-private fun RecentExpensesBottomSheet(
-    expenseEntity: ExpenseEntity,
-    viewModel: MainViewModel,
-    onDismiss: () -> Unit
-) {
-    BaseModalBottomSheet(onDismiss = { onDismiss() }) {
+fun HandleToast(viewModel: MainViewModel) {
+    val context = LocalContext.current
+    val showToast by viewModel.showToast.collectAsState()
+
+    when (val toast = showToast) {
+        is AppToast.Error -> Toasty.error(context, toast.message).show()
+        is AppToast.Success -> Toasty.success(context, toast.message).show()
+        AppToast.Nothing -> { }
+    }.also { viewModel.onToastShown() }
+}
+
+@Composable
+private fun ShowRecentExpensesBottomSheetWhenNeeded(viewModel: MainViewModel) {
+    val expenseBottomSheetState by viewModel.expenseBottomSheetState.collectAsState()
+    if (!expenseBottomSheetState.first) return
+    val expenseEntity = expenseBottomSheetState.second ?: return
+
+    BaseModalBottomSheet(onDismiss = {
+        viewModel.showExpenseBottomSheet(false, null)
+    }) {
         Column(
             verticalArrangement = Arrangement.spacedBy(40.dp),
             modifier = Modifier
@@ -315,19 +305,19 @@ private fun RecentExpensesBottomSheet(
                 Text(
                     text = expenseEntity.name,
                     style = MaterialTheme.typography.titleLarge,
-                    color = BlueText
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
 
                 Text(
                     text = expenseEntity.amount.toStringByLimitingDecimalDigits(3),
                     style = MaterialTheme.typography.titleSmall,
-                    color = BaseGreen
+                    color = MaterialTheme.colorScheme.secondary
                 )
 
                 Text(
                     text = expenseEntity.createdDateFormatted,
                     style = MaterialTheme.typography.titleSmall,
-                    color = BlueText
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             }
 
@@ -346,8 +336,8 @@ private fun RecentExpensesBottomSheet(
 
                 BaseButton(
                     text = stringResource(id = R.string.txt_remove),
-                    backgroundColor = LightGray,
-                    textColor = BlueText
+                    backgroundColor = MaterialTheme.colorScheme.background,
+                    textColor = MaterialTheme.colorScheme.onPrimary
                 ) {
                     with(viewModel) {
                         removeExpense(expenseEntity.id)

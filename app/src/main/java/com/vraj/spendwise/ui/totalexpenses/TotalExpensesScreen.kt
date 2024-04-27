@@ -25,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.painterResource
@@ -36,8 +35,6 @@ import com.vraj.spendwise.R
 import com.vraj.spendwise.ui.base.BaseButton
 import com.vraj.spendwise.ui.base.BaseModalBottomSheet
 import com.vraj.spendwise.ui.base.TopBar
-import com.vraj.spendwise.ui.theme.BlueText
-import com.vraj.spendwise.ui.theme.LightGray
 import com.vraj.spendwise.viewmodel.MainViewModel
 
 @Composable
@@ -67,7 +64,7 @@ fun TotalExpensesScreen(navHostController: NavHostController, viewModel: MainVie
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.primary)
                 .padding(paddingValues)
                 .padding(top = 40.dp)
                 .padding(horizontal = 16.dp)
@@ -105,7 +102,7 @@ private fun MonthFilterBottomSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(MaterialTheme.shapes.small)
-                        .background(LightGray)
+                        .background(MaterialTheme.colorScheme.background)
                         .padding(16.dp)
                         .clickable(
                             interactionSource = interactionSource,
@@ -120,7 +117,7 @@ private fun MonthFilterBottomSheet(
                     Text(
                         text = it,
                         style = MaterialTheme.typography.labelMedium,
-                        color = BlueText
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
 
                     Image(
@@ -150,13 +147,13 @@ private fun TotalExpensesBlock(viewModel: MainViewModel) {
             Text(
                 text = stringResource(id = R.string.txt_expense_type),
                 style = MaterialTheme.typography.titleMedium,
-                color = BlueText
+                color = MaterialTheme.colorScheme.onPrimary
             )
 
             Text(
                 text = stringResource(id = R.string.txt_total),
                 style = MaterialTheme.typography.titleMedium,
-                color = BlueText
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
 
@@ -171,13 +168,13 @@ private fun TotalExpensesBlock(viewModel: MainViewModel) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(MaterialTheme.shapes.small)
-                        .background(LightGray)
+                        .background(MaterialTheme.colorScheme.background)
                         .padding(16.dp)
                 ) {
                     Text(
                         text = it.name,
                         style = MaterialTheme.typography.labelMedium,
-                        color = BlueText,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier
                             .fillMaxWidth(0.8f)
                             .basicMarquee()
@@ -186,7 +183,7 @@ private fun TotalExpensesBlock(viewModel: MainViewModel) {
                     Text(
                         text = it.amount.toString(),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = BlueText
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }

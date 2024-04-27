@@ -17,8 +17,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
-import com.vraj.spendwise.ui.theme.BaseGreen
-import com.vraj.spendwise.ui.theme.LightGray
 
 @Composable
 fun BaseTextField(
@@ -34,7 +32,7 @@ fun BaseTextField(
             .height(52.dp)
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.small)
-            .background(LightGray)
+            .background(MaterialTheme.colorScheme.background)
             .padding(start = 19.dp, end = 21.dp)
     ) {
         BasicTextField(
@@ -58,7 +56,7 @@ fun BaseTextField(
                 }
                 innerTextField()
             },
-            cursorBrush = SolidColor(BaseGreen),
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.Center)

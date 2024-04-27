@@ -14,13 +14,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.vraj.spendwise.R
-import com.vraj.spendwise.ui.theme.BlueText
-import com.vraj.spendwise.ui.theme.LightGray
 
 @Composable
 fun TopBar(
@@ -30,7 +27,7 @@ fun TopBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.primary)
             .padding(horizontal = 16.dp)
             .padding(top = 20.dp)
     ) {
@@ -40,7 +37,7 @@ fun TopBar(
                 .size(45.dp)
                 .clip(CircleShape)
                 .align(Alignment.CenterStart)
-                .background(LightGray)
+                .background(MaterialTheme.colorScheme.background)
                 .clickable { onBackButtonClicked() }
         ) {
             Image(
@@ -51,7 +48,7 @@ fun TopBar(
         centerText?.let {
             Text(
                 text = it,
-                color = BlueText,
+                color = MaterialTheme.colorScheme.onPrimary,
                 lineHeight = 40.sp,
                 style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.align(Alignment.Center)

@@ -20,14 +20,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.vraj.spendwise.ui.theme.BaseGreen
 
 @Composable
 fun BaseButton(
     modifier: Modifier = Modifier,
-    backgroundColor: Color = BaseGreen,
+    backgroundColor: Color = MaterialTheme.colorScheme.secondary,
     cornerRadius: Dp = 10.dp,
-    textColor: Color = Color.White,
+    textColor: Color = MaterialTheme.colorScheme.primary,
     textStyle: TextStyle = MaterialTheme.typography.labelMedium,
     text: String,
     onButtonClicked: @Composable () -> Unit
