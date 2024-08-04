@@ -170,16 +170,7 @@ private fun RecentExpensesListBlock(viewModel: MainViewModel, modifier: Modifier
         modifier = modifier.fillMaxWidth()
     ) {
         RecentExpensesTitleBlock(viewModel)
-
-        RecentExpensesGridBlock(
-            viewModel = viewModel,
-            modifier = Modifier
-                .height(
-                    ((NUMBER_OF_ROWS_OF_RECENT_EXPENSES * RECENT_EXPENSE_SINGLE_ITEM_HEIGHT) +
-                            (SPACING_BETWEEN_ROWS_OF_RECENT_EXPENSES *
-                                    (NUMBER_OF_ROWS_OF_RECENT_EXPENSES - 1))).dp
-                )
-        )
+        RecentExpensesGridBlock(viewModel)
     }
 }
 
@@ -226,11 +217,29 @@ private fun RecentExpensesGridBlock(
     val expenses by viewModel.expenses.collectAsState()
     val interactionSource = remember { MutableInteractionSource() }
 
+    if (expenses.isEmpty()) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_no_expense_addded),
+            contentDescription = "",
+            modifier = modifier
+                .padding(vertical = 20.dp)
+                .fillMaxWidth()
+                .height(80.dp)
+        )
+        return
+    }
+
     LazyHorizontalStaggeredGrid(
         rows = StaggeredGridCells.Fixed(NUMBER_OF_ROWS_OF_RECENT_EXPENSES),
         horizontalItemSpacing = 20.dp,
         verticalArrangement = Arrangement.spacedBy(SPACING_BETWEEN_ROWS_OF_RECENT_EXPENSES.dp),
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
+            .height(
+                ((NUMBER_OF_ROWS_OF_RECENT_EXPENSES * RECENT_EXPENSE_SINGLE_ITEM_HEIGHT) +
+                        (SPACING_BETWEEN_ROWS_OF_RECENT_EXPENSES *
+                                (NUMBER_OF_ROWS_OF_RECENT_EXPENSES - 1))).dp
+            )
     ) {
         items(expenses) {
             Row(

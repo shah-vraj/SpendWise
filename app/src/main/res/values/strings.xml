@@ -13,4 +13,5 @@
     <string name="txt_remove">Remove</string>
     <string name="txt_expenses_title">Expenses</string>
     <string name="txt_total">Total</string>
+    <string name="txt_overall_total">Overall Total</string>
 </resources>

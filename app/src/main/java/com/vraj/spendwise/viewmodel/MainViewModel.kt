@@ -14,7 +14,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import java.math.RoundingMode
+import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -61,6 +64,13 @@ class MainViewModel @Inject constructor(
     private val currentMonthAndYearString: String
         get() = SimpleDateFormat("LLLL yyyy", Locale.getDefault())
             .format(Calendar.getInstance().time)
+
+    val overallTotal = filteredExpenses.map { expenses ->
+        val amount = expenses.sumOf { it.amount }
+        val decimalFormat = DecimalFormat("#.##")
+        decimalFormat.roundingMode = RoundingMode.CEILING
+        return@map decimalFormat.format(amount).toDouble()
+    }
 
     init {
         loadRecentExpenses()
@@ -202,9 +212,7 @@ class MainViewModel @Inject constructor(
                 add(
                     ExpenseEntity(
                         name = it.key,
-                        amount = it.value
-                            .map { entity -> entity.amount }
-                            .sumOf { amount -> amount }
+                        amount = it.value.sumOf { entity -> entity.amount }
                     )
                 )
             }
