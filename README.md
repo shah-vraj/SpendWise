@@ -4,7 +4,7 @@
 SpendWise is an Android application that helps you track all your expenses and provides overall expense data for all categories filtered by the month and year the expense was added.
 
 ## Installing the application
-To install the application, click [here](https://github.com/shah-vraj/SpendWise/releases/download/spendwise_1.0/SpendWise.apk) to download the apk file then you can install it onto your device. To know more about the releases, navigate to [releases](https://github.com/shah-vraj/SpendWise/releases) where you can find the release notes and assets.
+To install the application, click [here](https://github.com/shah-vraj/SpendWise/releases/download/spendwise_1.1/SpendWise.apk) to download the apk file then you can install it onto your device. To know more about the releases, navigate to [releases](https://github.com/shah-vraj/SpendWise/releases) where you can find the release notes and assets.
 
 ## How to use the application
 On the app launch, you will see a screen where you can input an expense and also see some of the recent expenses made. Go ahead, add expense name and its amount in the provided text field, press add expense button and see the change reflected in recent expenses section. Make sure you provide valid input to be successfully adding the expense.
