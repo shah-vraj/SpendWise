@@ -14,4 +14,5 @@
     <string name="txt_expenses_title">Expenses</string>
     <string name="txt_total">Total</string>
     <string name="txt_overall_total">Overall Total</string>
+    <string name="txt_no_expense_added">No Expense Added</string>
 </resources>

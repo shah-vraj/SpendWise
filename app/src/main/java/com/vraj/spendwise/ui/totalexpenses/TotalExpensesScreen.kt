@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -39,6 +38,7 @@ import com.vraj.spendwise.data.local.entity.ExpenseEntity
 import com.vraj.spendwise.ui.base.BaseButton
 import com.vraj.spendwise.ui.base.BaseModalBottomSheet
 import com.vraj.spendwise.ui.base.TopBar
+import com.vraj.spendwise.ui.inputexpense.EmptyExpenseView
 import com.vraj.spendwise.viewmodel.MainViewModel
 
 @Composable
@@ -134,7 +134,7 @@ private fun MonthAndYearList(
                 Text(
                     text = it,
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onPrimary
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Image(
@@ -158,16 +158,7 @@ private fun TotalExpensesBlock(
             modifier = Modifier
                 .fillMaxHeight()
                 .padding(bottom = 20.dp)
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_no_expense_addded),
-                contentDescription = "",
-                modifier = modifier
-                    .padding(vertical = 20.dp)
-                    .fillMaxWidth()
-                    .height(90.dp)
-            )
-        }
+        ) { EmptyExpenseView(modifier) }
         return
     }
 
@@ -234,7 +225,7 @@ private fun ExpenseTotalList(modifier: Modifier = Modifier, expenses: List<Expen
                 Text(
                     text = it.name,
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
                         .basicMarquee()
@@ -243,7 +234,7 @@ private fun ExpenseTotalList(modifier: Modifier = Modifier, expenses: List<Expen
                 Text(
                     text = it.amount.toString(),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onPrimary
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
         }
@@ -263,12 +254,14 @@ private fun OverallTotalBlock(modifier: Modifier = Modifier, overallTotal: Strin
     ) {
         Text(
             text = stringResource(id = R.string.txt_overall_total),
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSecondary
         )
 
         Text(
             text = overallTotal,
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSecondary
         )
     }
 }

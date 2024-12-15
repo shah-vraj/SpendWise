@@ -26,7 +26,7 @@ fun BaseButton(
     modifier: Modifier = Modifier,
     backgroundColor: Color = MaterialTheme.colorScheme.secondary,
     cornerRadius: Dp = 10.dp,
-    textColor: Color = MaterialTheme.colorScheme.primary,
+    textColor: Color = MaterialTheme.colorScheme.onSecondary,
     textStyle: TextStyle = MaterialTheme.typography.labelMedium,
     text: String,
     onButtonClicked: @Composable () -> Unit

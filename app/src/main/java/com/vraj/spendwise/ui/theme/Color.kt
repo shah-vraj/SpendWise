@@ -2,6 +2,8 @@ package com.vraj.spendwise.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val BlueText = Color(0xFF202244)
-val BaseGreen = Color(0xFF30C084)
+val RegularBlue = Color(0xFF202244)
+val DarkBlue = Color(0xFF131427)
+val RegularGreen = Color(0xFF30C084)
+val DarkGreen = Color(0xFF248D62)
 val LightGray = Color(0xFFF6F6F6)

@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -74,9 +75,15 @@ fun InputExpenseScreen(navHostController: NavHostController, viewModel: MainView
             contentScale = ContentScale.Fit,
             alignment = Alignment.Center,
             modifier = Modifier
-                .height(200.dp)
+                .height(150.dp)
                 .width(150.dp)
                 .padding(top = 20.dp)
+        )
+
+        Text(
+            text = stringResource(id = R.string.app_name),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onPrimary
         )
 
         ExpenseInputBlock(
@@ -156,7 +163,7 @@ private fun AddOrViewExpenseButtonsBlock(
         BaseButton(
             text = stringResource(id = R.string.txt_show_expense),
             backgroundColor = MaterialTheme.colorScheme.background,
-            textColor = MaterialTheme.colorScheme.onPrimary
+            textColor = MaterialTheme.colorScheme.onBackground
         ) {
             navHostController.navigate(MainScreen.TotalExpensesScreen.route)
         }
@@ -218,14 +225,7 @@ private fun RecentExpensesGridBlock(
     val interactionSource = remember { MutableInteractionSource() }
 
     if (expenses.isEmpty()) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_no_expense_addded),
-            contentDescription = "",
-            modifier = modifier
-                .padding(vertical = 20.dp)
-                .fillMaxWidth()
-                .height(80.dp)
-        )
+        EmptyExpenseView(modifier)
         return
     }
 
@@ -254,7 +254,7 @@ private fun RecentExpensesGridBlock(
                     text = it.name,
                     style = MaterialTheme.typography.labelSmall,
                     textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.onSecondary,
                     modifier = Modifier
                         .clip(MaterialTheme.shapes.extraSmall)
                         .background(MaterialTheme.colorScheme.secondary)
@@ -279,7 +279,7 @@ private fun RecentExpensesGridBlock(
 }
 
 @Composable
-fun HandleToast(viewModel: MainViewModel) {
+private fun HandleToast(viewModel: MainViewModel) {
     val context = LocalContext.current
     val showToast by viewModel.showToast.collectAsState()
 
@@ -346,7 +346,7 @@ private fun ShowRecentExpensesBottomSheetWhenNeeded(viewModel: MainViewModel) {
                 BaseButton(
                     text = stringResource(id = R.string.txt_remove),
                     backgroundColor = MaterialTheme.colorScheme.background,
-                    textColor = MaterialTheme.colorScheme.onPrimary
+                    textColor = MaterialTheme.colorScheme.onBackground
                 ) {
                     with(viewModel) {
                         removeExpense(expenseEntity.id)
@@ -356,5 +356,29 @@ private fun ShowRecentExpensesBottomSheetWhenNeeded(viewModel: MainViewModel) {
                 }
             }
         }
+    }
+}
+
+@Composable
+fun EmptyExpenseView(modifier: Modifier) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_no_expense_added),
+            contentDescription = "",
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
+            modifier = Modifier
+                .padding(vertical = 10.dp)
+                .fillMaxWidth()
+                .height(60.dp)
+        )
+
+        Text(
+            text = stringResource(id = R.string.txt_no_expense_added),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onPrimary
+        )
     }
 }

@@ -27,7 +27,6 @@ fun TopBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.primary)
             .padding(horizontal = 16.dp)
             .padding(top = 20.dp)
     ) {
