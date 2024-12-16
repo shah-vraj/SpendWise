@@ -1,7 +1,8 @@
 [versions]
 compile-sdk-version = "34"
 min-sdk-version = "26"
-version-code = "1"
+playServicesAds = "23.6.0"
+version-code = "3"
 version-name = "1.0"
 agp = "8.3.2"
 hilt = "2.51.1"
@@ -25,6 +26,7 @@ androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-view
 hilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-dagger-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hilt-jetpack" }
+play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
