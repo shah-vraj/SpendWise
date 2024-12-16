@@ -89,4 +89,7 @@ dependencies {
 
     // Toast
     implementation(libs.toasty)
+
+    // AdMob
+    implementation(libs.play.services.ads)
 }

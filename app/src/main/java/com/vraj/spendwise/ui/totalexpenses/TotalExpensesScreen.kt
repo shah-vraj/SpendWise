@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -210,7 +211,7 @@ private fun ExpenseTotalList(modifier: Modifier = Modifier, expenses: List<Expen
         verticalArrangement = Arrangement.spacedBy(15.dp),
         modifier = modifier
             .fillMaxWidth()
-            .fillMaxHeight(0.9f)
+            .fillMaxHeight(0.85f)
     ) {
         items(expenses) {
             Row(
@@ -248,6 +249,7 @@ private fun OverallTotalBlock(modifier: Modifier = Modifier, overallTotal: Strin
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
+            .wrapContentHeight()
             .clip(MaterialTheme.shapes.small)
             .background(MaterialTheme.colorScheme.secondary)
             .padding(16.dp)
