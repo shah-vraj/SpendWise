@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.vraj.spendwise.util.MonthOfYear
+import com.vraj.spendwise.util.extension.toStringByLimitingDecimalDigits
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -27,6 +28,9 @@ data class ExpenseEntity(
             get() = MonthOfYear.getMonthStringFromNumericString(month) + " " + year
     }
 
-    val createdDateFormatted : String
+    val createdDateFormatted: String
         get() = date.format(DateTimeFormatter.ofPattern("dd LLLL yyyy"))
+
+    val amountString: String
+        get() = amount.toStringByLimitingDecimalDigits(3)
 }

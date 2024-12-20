@@ -6,6 +6,7 @@ import com.vraj.spendwise.R
 import com.vraj.spendwise.data.local.entity.ExpenseEntity
 import com.vraj.spendwise.data.local.repository.ExpenseRepository
 import com.vraj.spendwise.di.IoDispatcher
+import com.vraj.spendwise.ui.model.AlertDialogData
 import com.vraj.spendwise.util.AppToast
 import com.vraj.spendwise.util.MonthOfYear
 import com.vraj.spendwise.util.extension.isLastCharValid
@@ -63,6 +64,9 @@ class MainViewModel @Inject constructor(
 
     private val _filteredExpenses = MutableStateFlow<List<ExpenseEntity>>(emptyList())
     val filteredExpenses = _filteredExpenses.asStateFlow()
+
+    private val _showAlertDialog = MutableStateFlow<AlertDialogData?>(null)
+    val showAlertDialog = _showAlertDialog.asStateFlow()
 
     private val currentMonthAndYearString: String
         get() = SimpleDateFormat("LLLL yyyy", Locale.getDefault())
@@ -171,6 +175,10 @@ class MainViewModel @Inject constructor(
     fun setSelectedMonthAndYear(selectedMonthAndYear: String) {
         _selectedMonthAndYear.value = selectedMonthAndYear
         updateFilteredExpenses(selectedMonthAndYear)
+    }
+
+    fun showAlertDialog(alertDialogData: AlertDialogData?) {
+        _showAlertDialog.value = alertDialogData
     }
 
     private suspend fun addExpense(name: String, amount: Double) {

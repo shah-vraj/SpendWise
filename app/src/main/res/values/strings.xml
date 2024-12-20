@@ -15,4 +15,10 @@
     <string name="txt_total">Total</string>
     <string name="txt_overall_total">Overall Total</string>
     <string name="txt_no_expense_added">No Expense Added</string>
+    <string name="txt_confirm">Confirm</string>
+    <string name="txt_cancel">Cancel</string>
+    <string name="txt_add_expense_again_title">Add expense</string>
+    <string name="txt_add_expense_again_message">Are you sure you want to re-add this expense?</string>
+    <string name="txt_remove_expense_title">Remove expense</string>
+    <string name="txt_remove_expense_message">Are you sure you want to remove this expense?</string>
 </resources>

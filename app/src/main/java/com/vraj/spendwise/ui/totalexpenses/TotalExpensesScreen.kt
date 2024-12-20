@@ -47,7 +47,6 @@ import com.vraj.spendwise.data.local.entity.ExpenseEntity
 import com.vraj.spendwise.ui.base.BaseModalBottomSheet
 import com.vraj.spendwise.ui.base.TopBar
 import com.vraj.spendwise.ui.inputexpense.EmptyExpenseView
-import com.vraj.spendwise.util.extension.toStringByLimitingDecimalDigits
 import com.vraj.spendwise.viewmodel.MainViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -298,7 +297,7 @@ private fun ExpenseTotalList(modifier: Modifier = Modifier, expenses: List<Expen
                 )
 
                 Text(
-                    text = it.amount.toStringByLimitingDecimalDigits(3),
+                    text = it.amountString,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onBackground
                 )
