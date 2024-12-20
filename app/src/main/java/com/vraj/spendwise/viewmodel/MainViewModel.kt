@@ -8,6 +8,8 @@ import com.vraj.spendwise.data.local.repository.ExpenseRepository
 import com.vraj.spendwise.di.IoDispatcher
 import com.vraj.spendwise.util.AppToast
 import com.vraj.spendwise.util.MonthOfYear
+import com.vraj.spendwise.util.extension.isLastCharValid
+import com.vraj.spendwise.util.extension.toStringByLimitingDecimalDigits
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,8 +18,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import java.math.RoundingMode
-import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -66,10 +66,8 @@ class MainViewModel @Inject constructor(
             .format(Calendar.getInstance().time)
 
     val overallTotal = filteredExpenses.map { expenses ->
-        val amount = expenses.sumOf { it.amount }
-        val decimalFormat = DecimalFormat("#.##")
-        decimalFormat.roundingMode = RoundingMode.CEILING
-        return@map decimalFormat.format(amount).toDouble()
+        expenses.sumOf { it.amount }
+            .toStringByLimitingDecimalDigits(3)
     }
 
     init {
@@ -86,10 +84,14 @@ class MainViewModel @Inject constructor(
     }
 
     fun setExpenseType(value: String) {
-        _expenseType.value = value
+        if (value.length > EXPENSE_NAME_CHAR_LIMIT || !value.isLastCharValid())
+            return
+        _expenseType.value = value.trim()
     }
 
     fun setAmount(value: String) {
+        if (value.length > EXPENSE_AMOUNT_CHAR_LIMIT)
+            return
         _amount.value = value
     }
 
@@ -221,6 +223,8 @@ class MainViewModel @Inject constructor(
     companion object {
         private const val RECENT_EXPENSES_FETCH_LIMIT = 10
         private const val ALL_TIME_EXPENSES = "All time"
+        private const val EXPENSE_NAME_CHAR_LIMIT = 25
+        private const val EXPENSE_AMOUNT_CHAR_LIMIT = 8
         const val NUMBER_OF_ROWS_OF_RECENT_EXPENSES = 3
         const val SPACING_BETWEEN_ROWS_OF_RECENT_EXPENSES = 15
         const val RECENT_EXPENSE_SINGLE_ITEM_HEIGHT = 45
