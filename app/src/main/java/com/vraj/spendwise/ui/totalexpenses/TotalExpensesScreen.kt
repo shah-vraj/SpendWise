@@ -13,10 +13,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -32,14 +34,16 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.vraj.spendwise.R
 import com.vraj.spendwise.data.local.entity.ExpenseEntity
-import com.vraj.spendwise.ui.base.BaseButton
 import com.vraj.spendwise.ui.base.BaseModalBottomSheet
 import com.vraj.spendwise.ui.base.TopBar
 import com.vraj.spendwise.ui.inputexpense.EmptyExpenseView
+import com.vraj.spendwise.util.extension.toStringByLimitingDecimalDigits
 import com.vraj.spendwise.viewmodel.MainViewModel
 
 @Composable
@@ -80,7 +84,7 @@ fun TotalExpensesScreen(navHostController: NavHostController, viewModel: MainVie
         }
     ) { paddingValues ->
         Column(
-            verticalArrangement = Arrangement.spacedBy(40.dp),
+            verticalArrangement = Arrangement.spacedBy(25.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxSize()
@@ -89,8 +93,33 @@ fun TotalExpensesScreen(navHostController: NavHostController, viewModel: MainVie
                 .padding(top = 40.dp)
                 .padding(horizontal = 16.dp)
         ) {
-            BaseButton(text = selectedMonthAndYear) {
-                viewModel.showMonthFilterBottomSheet(true)
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .height(52.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.secondary)
+                    .padding(16.dp)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+                        viewModel.showMonthFilterBottomSheet(true)
+                    }
+            ) {
+                Text(
+                    text = selectedMonthAndYear,
+                    style = MaterialTheme.typography.labelMedium,
+                    lineHeight = 20.sp,
+                    color = MaterialTheme.colorScheme.onSecondary
+                )
+
+                Image(
+                    painter = painterResource(id = R.drawable.ic_arrow_down),
+                    contentDescription = ""
+                )
             }
 
             TotalExpensesBlock(
@@ -228,12 +257,13 @@ private fun ExpenseTotalList(modifier: Modifier = Modifier, expenses: List<Expen
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier
-                        .fillMaxWidth(0.8f)
-                        .basicMarquee()
+                        .padding(end = 16.dp)
+                        .weight(1f)
+                        .basicMarquee(iterations = 2)
                 )
 
                 Text(
-                    text = it.amount.toString(),
+                    text = it.amount.toStringByLimitingDecimalDigits(3),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onBackground
                 )
@@ -257,7 +287,12 @@ private fun OverallTotalBlock(modifier: Modifier = Modifier, overallTotal: Strin
         Text(
             text = stringResource(id = R.string.txt_overall_total),
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSecondary
+            color = MaterialTheme.colorScheme.onSecondary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .padding(end = 16.dp)
+                .weight(1f)
         )
 
         Text(
