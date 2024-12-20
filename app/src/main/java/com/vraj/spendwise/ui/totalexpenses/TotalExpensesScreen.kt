@@ -19,14 +19,18 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,12 +49,12 @@ import com.vraj.spendwise.ui.base.TopBar
 import com.vraj.spendwise.ui.inputexpense.EmptyExpenseView
 import com.vraj.spendwise.util.extension.toStringByLimitingDecimalDigits
 import com.vraj.spendwise.viewmodel.MainViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun TotalExpensesScreen(navHostController: NavHostController, viewModel: MainViewModel) {
-    val showMonthFilterBottomSheet by viewModel.showMonthFilterBottomSheet.collectAsState()
     val selectedMonthAndYear by viewModel.selectedMonthAndYear.collectAsState()
-    val monthAndYearList by viewModel.monthAndYears.collectAsState()
     val filteredExpenses by viewModel.filteredExpenses.collectAsState()
     val overallTotal by viewModel.overallTotal.collectAsState(initial = 0)
 
@@ -58,22 +62,7 @@ fun TotalExpensesScreen(navHostController: NavHostController, viewModel: MainVie
         viewModel.setCurrentMonthAndYearAsSelected()
     }
 
-    if (showMonthFilterBottomSheet) {
-        BaseModalBottomSheet(
-            onDismiss = { viewModel.showMonthFilterBottomSheet(false) },
-            content = {
-                MonthAndYearList(
-                    monthAndYearList = monthAndYearList,
-                    onItemClick = {
-                        with(viewModel) {
-                            setSelectedMonthAndYear(it)
-                            showMonthFilterBottomSheet(false)
-                        }
-                    }
-                )
-            }
-        )
-    }
+    ShowMonthFilterBottomSheet(viewModel)
 
     Scaffold(
         topBar = {
@@ -128,6 +117,52 @@ fun TotalExpensesScreen(navHostController: NavHostController, viewModel: MainVie
                 overallTotal = overallTotal.toString()
             )
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ShowMonthFilterBottomSheet(viewModel: MainViewModel) {
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+    val showMonthFilterBottomSheet by viewModel.showMonthFilterBottomSheet.collectAsState()
+    val monthAndYearList by viewModel.monthAndYears.collectAsState()
+
+    LaunchedEffect(showMonthFilterBottomSheet) {
+        if (showMonthFilterBottomSheet) sheetState.show() else sheetState.hide()
+    }
+
+    if (sheetState.isVisible || showMonthFilterBottomSheet) {
+        BaseModalBottomSheet(
+            sheetSate = sheetState,
+            onDismiss = { viewModel.showMonthFilterBottomSheet(false) },
+            content = {
+                MonthAndYearList(
+                    monthAndYearList = monthAndYearList,
+                    onItemClick = {
+                        hideBottomSheetWithAnimation(sheetState, scope) {
+                            viewModel.apply {
+                                showMonthFilterBottomSheet(false)
+                                setSelectedMonthAndYear(it)
+                            }
+                        }
+                    }
+                )
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+private fun hideBottomSheetWithAnimation(
+    sheetState: SheetState,
+    scope: CoroutineScope,
+    onCompletion: () -> Unit
+) {
+    scope.launch {
+        sheetState.hide()
+    }.invokeOnCompletion {
+        onCompletion()
     }
 }
 

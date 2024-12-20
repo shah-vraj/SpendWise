@@ -20,12 +20,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -57,6 +62,8 @@ import com.vraj.spendwise.viewmodel.MainViewModel.Companion.NUMBER_OF_ROWS_OF_RE
 import com.vraj.spendwise.viewmodel.MainViewModel.Companion.RECENT_EXPENSE_SINGLE_ITEM_HEIGHT
 import com.vraj.spendwise.viewmodel.MainViewModel.Companion.SPACING_BETWEEN_ROWS_OF_RECENT_EXPENSES
 import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun InputExpenseScreen(navHostController: NavHostController, viewModel: MainViewModel) {
@@ -250,7 +257,12 @@ private fun RecentExpensesGridBlock(
                     .clickable(
                         interactionSource = interactionSource,
                         indication = null
-                    ) { viewModel.showExpenseBottomSheet(true, it) }
+                    ) {
+                        viewModel.apply {
+                            setExpenseBottomSheetEntity(it)
+                            setExpenseBottomSheetState(true)
+                        }
+                    }
             ) {
                 Text(
                     text = it.name,
@@ -290,73 +302,94 @@ private fun HandleToast(viewModel: MainViewModel) {
     when (val toast = showToast) {
         is AppToast.Error -> Toasty.error(context, toast.message).show()
         is AppToast.Success -> Toasty.success(context, toast.message).show()
-        AppToast.Nothing -> { }
+        AppToast.Nothing -> {}
     }.also { viewModel.onToastShown() }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ShowRecentExpensesBottomSheetWhenNeeded(viewModel: MainViewModel) {
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
     val expenseBottomSheetState by viewModel.expenseBottomSheetState.collectAsState()
-    if (!expenseBottomSheetState.first) return
-    val expenseEntity = expenseBottomSheetState.second ?: return
+    val expenseEntity by viewModel.expenseBottomSheetEntity.collectAsState()
 
-    BaseModalBottomSheet(onDismiss = {
-        viewModel.showExpenseBottomSheet(false, null)
-    }) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(40.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 50.dp)
+    LaunchedEffect(expenseBottomSheetState) {
+        if (expenseBottomSheetState) sheetState.show() else sheetState.hide()
+    }
+
+    if (sheetState.isVisible || expenseBottomSheetState) {
+        BaseModalBottomSheet(
+            sheetSate = sheetState,
+            onDismiss = {
+                viewModel.apply {
+                    setExpenseBottomSheetState(false)
+                    setExpenseBottomSheetEntity(null)
+                }
+            }
         ) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = expenseEntity.name,
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-
-                Text(
-                    text = expenseEntity.amount.toStringByLimitingDecimalDigits(3),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-
-                Text(
-                    text = expenseEntity.createdDateFormatted,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            }
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(20.dp),
+                verticalArrangement = Arrangement.spacedBy(40.dp),
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 50.dp)
             ) {
-                BaseButton(text = stringResource(id = R.string.txt_add_again)) {
-                    with(viewModel) {
-                        addExpense(expenseEntity)
-                        showExpenseBottomSheet(false, null)
-                        showToast(AppToast.Success(R.string.add_expense_success))
-                    }
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = expenseEntity?.name.orEmpty(),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+
+                    Text(
+                        text = expenseEntity?.amount
+                            ?.toStringByLimitingDecimalDigits(3)
+                            .orEmpty(),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+
+                    Text(
+                        text = expenseEntity?.createdDateFormatted.orEmpty(),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
                 }
 
-                BaseButton(
-                    text = stringResource(id = R.string.txt_remove),
-                    backgroundColor = MaterialTheme.colorScheme.background,
-                    textColor = MaterialTheme.colorScheme.onBackground
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(20.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    with(viewModel) {
-                        removeExpense(expenseEntity.id)
-                        showExpenseBottomSheet(false, null)
-                        showToast(AppToast.Success(R.string.remove_expense_success))
+                    BaseButton(text = stringResource(id = R.string.txt_add_again)) {
+                        hideBottomSheetWithAnimation(sheetState, scope) {
+                            viewModel.apply {
+                                setExpenseBottomSheetState(false)
+                                setExpenseBottomSheetEntity(null)
+                                expenseEntity?.let { addExpense(it) }
+                                showToast(AppToast.Success(R.string.add_expense_success))
+                            }
+                        }
+                    }
+
+                    BaseButton(
+                        text = stringResource(id = R.string.txt_remove),
+                        backgroundColor = MaterialTheme.colorScheme.background,
+                        textColor = MaterialTheme.colorScheme.onBackground
+                    ) {
+                        hideBottomSheetWithAnimation(sheetState, scope) {
+                            viewModel.apply {
+                                setExpenseBottomSheetState(false)
+                                setExpenseBottomSheetEntity(null)
+                                expenseEntity?.let { removeExpense(it.id) }
+                                showToast(AppToast.Success(R.string.remove_expense_success))
+                            }
+                        }
                     }
                 }
             }
@@ -385,5 +418,18 @@ fun EmptyExpenseView(modifier: Modifier) {
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onPrimary
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+private fun hideBottomSheetWithAnimation(
+    sheetState: SheetState,
+    scope: CoroutineScope,
+    onCompletion: () -> Unit
+) {
+    scope.launch {
+        sheetState.hide()
+    }.invokeOnCompletion {
+        onCompletion()
     }
 }

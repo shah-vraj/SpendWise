@@ -46,8 +46,11 @@ class MainViewModel @Inject constructor(
     private val _showToast = MutableStateFlow<AppToast>(AppToast.Nothing)
     val showToast = _showToast.asStateFlow()
 
-    private val _expenseBottomSheetState = MutableStateFlow<Pair<Boolean, ExpenseEntity?>>(false to null)
+    private val _expenseBottomSheetState = MutableStateFlow(false)
     val expenseBottomSheetState = _expenseBottomSheetState.asStateFlow()
+
+    private val _expenseBottomSheetEntity = MutableStateFlow<ExpenseEntity?>(null)
+    val expenseBottomSheetEntity = _expenseBottomSheetEntity.asStateFlow()
 
     private val _showMonthFilterBottomSheet = MutableStateFlow(false)
     val showMonthFilterBottomSheet = _showMonthFilterBottomSheet.asStateFlow()
@@ -86,7 +89,7 @@ class MainViewModel @Inject constructor(
     fun setExpenseType(value: String) {
         if (value.length > EXPENSE_NAME_CHAR_LIMIT || !value.isLastCharValid())
             return
-        _expenseType.value = value.trim()
+        _expenseType.value = value
     }
 
     fun setAmount(value: String) {
@@ -96,7 +99,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun validateInputAndAddToDatabase() {
-        val expenseType = expenseType.value
+        val expenseType = expenseType.value.trim()
         val amount = amount.value.toDoubleOrNull() ?: run {
             _showToast.value = AppToast.Error(R.string.invalid_input_error)
             return
@@ -132,8 +135,12 @@ class MainViewModel @Inject constructor(
         _showToast.value = AppToast.Nothing
     }
 
-    fun showExpenseBottomSheet(shouldShow: Boolean, expenseEntity: ExpenseEntity?) {
-        _expenseBottomSheetState.value = shouldShow to expenseEntity
+    fun setExpenseBottomSheetEntity(expenseEntity: ExpenseEntity?) {
+        _expenseBottomSheetEntity.value = expenseEntity
+    }
+
+    fun setExpenseBottomSheetState(shouldShow: Boolean) {
+        _expenseBottomSheetState.value = shouldShow
     }
 
     fun addExpense(expenseEntity: ExpenseEntity) {
