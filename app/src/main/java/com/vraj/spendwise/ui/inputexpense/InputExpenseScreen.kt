@@ -51,12 +51,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import com.vraj.spendwise.R
+import com.vraj.spendwise.data.local.entity.ExpenseEntity
 import com.vraj.spendwise.ui.base.BaseButton
+import com.vraj.spendwise.ui.base.BaseConfirmationDialog
 import com.vraj.spendwise.ui.base.BaseModalBottomSheet
 import com.vraj.spendwise.ui.base.BaseTextField
+import com.vraj.spendwise.ui.model.AlertDialogData
 import com.vraj.spendwise.util.AppToast
 import com.vraj.spendwise.util.MainScreen
-import com.vraj.spendwise.util.extension.toStringByLimitingDecimalDigits
 import com.vraj.spendwise.viewmodel.MainViewModel
 import com.vraj.spendwise.viewmodel.MainViewModel.Companion.NUMBER_OF_ROWS_OF_RECENT_EXPENSES
 import com.vraj.spendwise.viewmodel.MainViewModel.Companion.RECENT_EXPENSE_SINGLE_ITEM_HEIGHT
@@ -69,6 +71,7 @@ import kotlinx.coroutines.launch
 fun InputExpenseScreen(navHostController: NavHostController, viewModel: MainViewModel) {
     val scrollState = rememberScrollState()
     HandleToast(viewModel)
+    HandleAlertDialog(viewModel)
     ShowRecentExpensesBottomSheetWhenNeeded(viewModel)
 
     Column(
@@ -279,7 +282,7 @@ private fun RecentExpensesGridBlock(
                 )
 
                 Text(
-                    text = it.amount.toStringByLimitingDecimalDigits(3),
+                    text = it.amountString,
                     style = MaterialTheme.typography.labelSmall,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.primary,
@@ -306,11 +309,27 @@ private fun HandleToast(viewModel: MainViewModel) {
     }.also { viewModel.onToastShown() }
 }
 
+@Composable
+fun HandleAlertDialog(viewModel: MainViewModel) {
+    val alertDialogData by viewModel.showAlertDialog.collectAsState()
+
+    alertDialogData?.let {
+        BaseConfirmationDialog(
+            title = it.title,
+            message = it.message,
+            subMessage = it.subMessage,
+            onConfirm = { it.onConfirmAction() },
+            onCancel = { viewModel.showAlertDialog(null) }
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ShowRecentExpensesBottomSheetWhenNeeded(viewModel: MainViewModel) {
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     val expenseBottomSheetState by viewModel.expenseBottomSheetState.collectAsState()
     val expenseEntity by viewModel.expenseBottomSheetEntity.collectAsState()
 
@@ -348,9 +367,7 @@ private fun ShowRecentExpensesBottomSheetWhenNeeded(viewModel: MainViewModel) {
                     )
 
                     Text(
-                        text = expenseEntity?.amount
-                            ?.toStringByLimitingDecimalDigits(3)
-                            .orEmpty(),
+                        text = expenseEntity?.amountString.orEmpty(),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -368,11 +385,10 @@ private fun ShowRecentExpensesBottomSheetWhenNeeded(viewModel: MainViewModel) {
                 ) {
                     BaseButton(text = stringResource(id = R.string.txt_add_again)) {
                         hideBottomSheetWithAnimation(sheetState, scope) {
-                            viewModel.apply {
-                                setExpenseBottomSheetState(false)
-                                setExpenseBottomSheetEntity(null)
-                                expenseEntity?.let { addExpense(it) }
-                                showToast(AppToast.Success(R.string.add_expense_success))
+                            expenseEntity?.let {
+                                onHideBottomSheetForAdd(viewModel, it) { id ->
+                                    context.getString(id)
+                                }
                             }
                         }
                     }
@@ -383,11 +399,10 @@ private fun ShowRecentExpensesBottomSheetWhenNeeded(viewModel: MainViewModel) {
                         textColor = MaterialTheme.colorScheme.onBackground
                     ) {
                         hideBottomSheetWithAnimation(sheetState, scope) {
-                            viewModel.apply {
-                                setExpenseBottomSheetState(false)
-                                setExpenseBottomSheetEntity(null)
-                                expenseEntity?.let { removeExpense(it.id) }
-                                showToast(AppToast.Success(R.string.remove_expense_success))
+                            expenseEntity?.let {
+                                onHideBottomSheetForRemove(viewModel, it) { id ->
+                                    context.getString(id)
+                                }
                             }
                         }
                     }
@@ -431,5 +446,49 @@ private fun hideBottomSheetWithAnimation(
         sheetState.hide()
     }.invokeOnCompletion {
         onCompletion()
+    }
+}
+
+private fun onHideBottomSheetForAdd(
+    viewModel: MainViewModel,
+    expenseEntity: ExpenseEntity,
+    getStringResource: (Int) -> String
+) {
+    viewModel.apply {
+        setExpenseBottomSheetState(false)
+        setExpenseBottomSheetEntity(null)
+        val alertDialogData = AlertDialogData(
+            title = getStringResource(R.string.txt_add_expense_again_title),
+            message = getStringResource(R.string.txt_add_expense_again_message),
+            subMessage = "${expenseEntity.name} - ${expenseEntity.amountString}",
+            onConfirmAction = {
+                addExpense(expenseEntity)
+                showToast(AppToast.Success(R.string.add_expense_success))
+                showAlertDialog(null)
+            }
+        )
+        showAlertDialog(alertDialogData)
+    }
+}
+
+private fun onHideBottomSheetForRemove(
+    viewModel: MainViewModel,
+    expenseEntity: ExpenseEntity,
+    getStringResource: (Int) -> String
+) {
+    viewModel.apply {
+        setExpenseBottomSheetState(false)
+        setExpenseBottomSheetEntity(null)
+        val alertDialogData = AlertDialogData(
+            title = getStringResource(R.string.txt_remove_expense_title),
+            message = getStringResource(R.string.txt_remove_expense_message),
+            subMessage = "${expenseEntity.name} - ${expenseEntity.amountString}",
+            onConfirmAction = {
+                removeExpense(expenseEntity.id)
+                showToast(AppToast.Success(R.string.remove_expense_success))
+                showAlertDialog(null)
+            }
+        )
+        showAlertDialog(alertDialogData)
     }
 }
