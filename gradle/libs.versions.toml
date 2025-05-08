@@ -2,7 +2,7 @@
 compile-sdk-version = "34"
 min-sdk-version = "26"
 playServicesAds = "23.6.0"
-version-code = "3"
+version-code = "5"
 version-name = "1.0"
 agp = "8.3.2"
 hilt = "2.51.1"
