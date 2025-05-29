@@ -8,6 +8,8 @@ import javax.inject.Inject
 interface ExpenseRepository {
     suspend fun addExpense(name: String, amount: Double)
 
+    suspend fun editExpense(id: Int, name: String, amount: Double)
+
     suspend fun getLastExpense(): ExpenseEntity?
 
     suspend fun getRecentExpenses(limit: Int, offset: Int): List<ExpenseEntity>
@@ -31,6 +33,9 @@ class ExpenseRepositoryImpl @Inject constructor(
 
     override suspend fun addExpense(name: String, amount: Double) =
         expenseDao.addExpense(ExpenseEntity(name = name, amount = amount))
+
+    override suspend fun editExpense(id: Int, name: String, amount: Double) =
+        expenseDao.editExpense(id, name, amount)
 
     override suspend fun getLastExpense(): ExpenseEntity? =
         expenseDao.getLastExpense()

@@ -13,6 +13,9 @@ interface ExpenseDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addExpense(expenseEntity: ExpenseEntity)
 
+    @Query("UPDATE UserExpense SET name = :name, amount = :amount WHERE id = :id")
+    suspend fun editExpense(id: Int, name: String, amount: Double)
+
     @Query("SELECT * FROM UserExpense ORDER BY id DESC LIMIT 1")
     suspend fun getLastExpense(): ExpenseEntity?
 

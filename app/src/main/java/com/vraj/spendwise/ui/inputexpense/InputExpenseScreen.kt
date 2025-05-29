@@ -20,17 +20,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -51,13 +47,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import com.vraj.spendwise.R
-import com.vraj.spendwise.data.local.entity.ExpenseEntity
 import com.vraj.spendwise.ui.base.BaseButton
 import com.vraj.spendwise.ui.base.BaseConfirmationDialog
-import com.vraj.spendwise.ui.base.BaseModalBottomSheet
 import com.vraj.spendwise.ui.base.BaseTextField
 import com.vraj.spendwise.ui.base.BaseTextFieldWithDropdown
-import com.vraj.spendwise.ui.model.AlertDialogData
 import com.vraj.spendwise.util.AppToast
 import com.vraj.spendwise.util.MainScreen
 import com.vraj.spendwise.viewmodel.MainViewModel
@@ -65,15 +58,13 @@ import com.vraj.spendwise.viewmodel.MainViewModel.Companion.NUMBER_OF_ROWS_OF_RE
 import com.vraj.spendwise.viewmodel.MainViewModel.Companion.RECENT_EXPENSE_SINGLE_ITEM_HEIGHT
 import com.vraj.spendwise.viewmodel.MainViewModel.Companion.SPACING_BETWEEN_ROWS_OF_RECENT_EXPENSES
 import es.dmoral.toasty.Toasty
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 @Composable
 fun InputExpenseScreen(navHostController: NavHostController, viewModel: MainViewModel) {
     val scrollState = rememberScrollState()
     HandleToast(viewModel)
     HandleAlertDialog(viewModel)
-    ShowRecentExpensesBottomSheetWhenNeeded(viewModel)
+    RecentExpenseBottomSheet(viewModel)
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -168,21 +159,44 @@ private fun AddOrViewExpenseButtonsBlock(
     modifier: Modifier = Modifier
 ) {
     val focusManager = LocalFocusManager.current
+    val isEntityEditInProgress by viewModel.isEntityEditInProgress.collectAsState()
+
+    val addEditButtonTitle by remember {
+        derivedStateOf {
+            if (isEntityEditInProgress)
+                R.string.txt_confirm
+            else
+                R.string.txt_add_expense
+        }
+    }
+    val showOrCancelEditButtonTitle by remember {
+        derivedStateOf {
+            if (isEntityEditInProgress)
+                R.string.txt_cancel
+            else
+                R.string.txt_show_expense
+        }
+    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(20.dp),
         modifier = modifier.fillMaxWidth()
     ) {
-        BaseButton(text = stringResource(id = R.string.txt_add_expense)) {
+        BaseButton(text = stringResource(id = addEditButtonTitle)) {
             viewModel.validateInputAndAddToDatabase()
             focusManager.clearFocus()
         }
 
         BaseButton(
-            text = stringResource(id = R.string.txt_show_expense),
+            text = stringResource(id = showOrCancelEditButtonTitle),
             backgroundColor = MaterialTheme.colorScheme.background,
             textColor = MaterialTheme.colorScheme.onBackground
         ) {
+            if (isEntityEditInProgress) {
+                viewModel.clearEditMode()
+                focusManager.clearFocus()
+                return@BaseButton
+            }
             navHostController.navigate(MainScreen.TotalExpensesScreen.route)
         }
     }
@@ -330,93 +344,7 @@ fun HandleAlertDialog(viewModel: MainViewModel) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ShowRecentExpensesBottomSheetWhenNeeded(viewModel: MainViewModel) {
-    val sheetState = rememberModalBottomSheetState()
-    val scope = rememberCoroutineScope()
-    val context = LocalContext.current
-    val expenseBottomSheetState by viewModel.expenseBottomSheetState.collectAsState()
-    val expenseEntity by viewModel.expenseBottomSheetEntity.collectAsState()
 
-    LaunchedEffect(expenseBottomSheetState) {
-        if (expenseBottomSheetState) sheetState.show() else sheetState.hide()
-    }
-
-    if (sheetState.isVisible || expenseBottomSheetState) {
-        BaseModalBottomSheet(
-            sheetSate = sheetState,
-            onDismiss = {
-                viewModel.apply {
-                    setExpenseBottomSheetState(false)
-                    setExpenseBottomSheetEntity(null)
-                }
-            }
-        ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(40.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .padding(bottom = 50.dp)
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = expenseEntity?.name.orEmpty(),
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-
-                    Text(
-                        text = expenseEntity?.amountString.orEmpty(),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-
-                    Text(
-                        text = expenseEntity?.createdDateFormatted.orEmpty(),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(20.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    BaseButton(text = stringResource(id = R.string.txt_add_again)) {
-                        hideBottomSheetWithAnimation(sheetState, scope) {
-                            expenseEntity?.let {
-                                onHideBottomSheetForAdd(viewModel, it) { id ->
-                                    context.getString(id)
-                                }
-                            }
-                        }
-                    }
-
-                    BaseButton(
-                        text = stringResource(id = R.string.txt_remove),
-                        backgroundColor = MaterialTheme.colorScheme.background,
-                        textColor = MaterialTheme.colorScheme.onBackground
-                    ) {
-                        hideBottomSheetWithAnimation(sheetState, scope) {
-                            expenseEntity?.let {
-                                onHideBottomSheetForRemove(viewModel, it) { id ->
-                                    context.getString(id)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun EmptyExpenseView(modifier: Modifier) {
@@ -442,59 +370,3 @@ fun EmptyExpenseView(modifier: Modifier) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-private fun hideBottomSheetWithAnimation(
-    sheetState: SheetState,
-    scope: CoroutineScope,
-    onCompletion: () -> Unit
-) {
-    scope.launch {
-        sheetState.hide()
-    }.invokeOnCompletion {
-        onCompletion()
-    }
-}
-
-private fun onHideBottomSheetForAdd(
-    viewModel: MainViewModel,
-    expenseEntity: ExpenseEntity,
-    getStringResource: (Int) -> String
-) {
-    viewModel.apply {
-        setExpenseBottomSheetState(false)
-        setExpenseBottomSheetEntity(null)
-        val alertDialogData = AlertDialogData(
-            title = getStringResource(R.string.txt_add_expense_again_title),
-            message = getStringResource(R.string.txt_add_expense_again_message),
-            subMessage = "${expenseEntity.name} - ${expenseEntity.amountString}",
-            onConfirmAction = {
-                addExpense(expenseEntity)
-                showToast(AppToast.Success(R.string.add_expense_success))
-                showAlertDialog(null)
-            }
-        )
-        showAlertDialog(alertDialogData)
-    }
-}
-
-private fun onHideBottomSheetForRemove(
-    viewModel: MainViewModel,
-    expenseEntity: ExpenseEntity,
-    getStringResource: (Int) -> String
-) {
-    viewModel.apply {
-        setExpenseBottomSheetState(false)
-        setExpenseBottomSheetEntity(null)
-        val alertDialogData = AlertDialogData(
-            title = getStringResource(R.string.txt_remove_expense_title),
-            message = getStringResource(R.string.txt_remove_expense_message),
-            subMessage = "${expenseEntity.name} - ${expenseEntity.amountString}",
-            onConfirmAction = {
-                removeExpense(expenseEntity.id)
-                showToast(AppToast.Success(R.string.remove_expense_success))
-                showAlertDialog(null)
-            }
-        )
-        showAlertDialog(alertDialogData)
-    }
-}

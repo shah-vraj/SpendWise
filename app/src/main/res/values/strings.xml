@@ -21,4 +21,6 @@
     <string name="txt_add_expense_again_message">Are you sure you want to re-add this expense?</string>
     <string name="txt_remove_expense_title">Remove expense</string>
     <string name="txt_remove_expense_message">Are you sure you want to remove this expense?</string>
+    <string name="txt_edit">Edit</string>
+    <string name="edit_expense_success">Successfully edited expense</string>
 </resources>
