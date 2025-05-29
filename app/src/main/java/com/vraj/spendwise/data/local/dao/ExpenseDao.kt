@@ -33,4 +33,7 @@ interface ExpenseDao {
 
     @Query("SELECT * FROM UserExpense")
     suspend fun getAllExpenses(): List<ExpenseEntity>
+
+    @Query("SELECT DISTINCT name FROM UserExpense")
+    suspend fun getAllExpansesName(): List<String>
 }

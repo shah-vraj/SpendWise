@@ -21,6 +21,8 @@ interface ExpenseRepository {
     suspend fun getDataForMonthAndYear(month: String, year: String): List<ExpenseEntity>
 
     suspend fun getAllExpenses(): List<ExpenseEntity>
+
+    suspend fun getAllExpensesName(): List<String>
 }
 
 class ExpenseRepositoryImpl @Inject constructor(
@@ -50,4 +52,7 @@ class ExpenseRepositoryImpl @Inject constructor(
 
     override suspend fun getAllExpenses(): List<ExpenseEntity> =
         expenseDao.getAllExpenses()
+
+    override suspend fun getAllExpensesName(): List<String> =
+        expenseDao.getAllExpansesName()
 }

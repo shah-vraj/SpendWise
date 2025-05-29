@@ -1,11 +1,12 @@
 package com.vraj.spendwise.viewmodel
 
-import androidx.lifecycle.ViewModel
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
 import com.vraj.spendwise.R
 import com.vraj.spendwise.data.local.entity.ExpenseEntity
 import com.vraj.spendwise.data.local.repository.ExpenseRepository
 import com.vraj.spendwise.di.IoDispatcher
+import com.vraj.spendwise.ui.base.BaseViewModel
 import com.vraj.spendwise.ui.model.AlertDialogData
 import com.vraj.spendwise.util.AppToast
 import com.vraj.spendwise.util.MonthOfYear
@@ -28,14 +29,14 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val expenseRepository: ExpenseRepository
-) : ViewModel() {
+) : BaseViewModel() {
 
     private var currentOffset = 0
 
-    private val _expenseType = MutableStateFlow("")
+    private val _expenseType = MutableStateFlow(TextFieldValue())
     val expenseType = _expenseType.asStateFlow()
 
-    private val _amount = MutableStateFlow("")
+    private val _amount = MutableStateFlow(TextFieldValue())
     val amount = _amount.asStateFlow()
 
     private val _expenses = MutableStateFlow<List<ExpenseEntity>>(emptyList())
@@ -68,9 +69,17 @@ class MainViewModel @Inject constructor(
     private val _showAlertDialog = MutableStateFlow<AlertDialogData?>(null)
     val showAlertDialog = _showAlertDialog.asStateFlow()
 
+    private val _expenseTypeDropdownItems = MutableStateFlow<List<String>>(emptyList())
+    val expenseTypeDropdownItems = _expenseTypeDropdownItems.asStateFlow()
+
+    private val _isDropdownExpanded = MutableStateFlow(false)
+    val isDropdownExpanded = _isDropdownExpanded.asStateFlow()
+
     private val currentMonthAndYearString: String
         get() = SimpleDateFormat("LLLL yyyy", Locale.getDefault())
             .format(Calendar.getInstance().time)
+
+    private val allExpensesNames = mutableListOf<String>()
 
     val overallTotal = filteredExpenses.map { expenses ->
         expenses.sumOf { it.amount }
@@ -79,6 +88,7 @@ class MainViewModel @Inject constructor(
 
     init {
         loadRecentExpenses()
+        updateAllExpensesName()
         loadMonthAndYears()
         setCurrentMonthAndYearAsSelected()
         viewModelScope.launch {
@@ -90,21 +100,28 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun setExpenseType(value: String) {
-        if (value.length > EXPENSE_NAME_CHAR_LIMIT || !value.isLastCharValid())
+    fun setExpenseType(value: TextFieldValue) {
+        val text = value.text
+        if (text.length > EXPENSE_NAME_CHAR_LIMIT || !text.isLastCharValid())
             return
         _expenseType.value = value
+        _expenseTypeDropdownItems.value = allExpensesNames.filter {
+            text.isNotEmpty() && it.lowercase().startsWith(text.lowercase()) && it != text
+        }.take(MAX_NUMBER_OF_EXPENSE_TYPE_SUGGESTION)
+        debounce(EXPENSE_TYPE_DROPDOWN_DEBOUNCE_TIME) {
+            _isDropdownExpanded.value = _expenseTypeDropdownItems.value.isNotEmpty()
+        }
     }
 
-    fun setAmount(value: String) {
-        if (value.length > EXPENSE_AMOUNT_CHAR_LIMIT)
+    fun setAmount(value: TextFieldValue) {
+        if (value.text.length > EXPENSE_AMOUNT_CHAR_LIMIT)
             return
         _amount.value = value
     }
 
     fun validateInputAndAddToDatabase() {
-        val expenseType = expenseType.value.trim()
-        val amount = amount.value.toDoubleOrNull() ?: run {
+        val expenseType = expenseType.value.text.trim()
+        val amount = amount.value.text.toDoubleOrNull() ?: run {
             _showToast.value = AppToast.Error(R.string.invalid_input_error)
             return
         }
@@ -161,6 +178,7 @@ class MainViewModel @Inject constructor(
                 removeIf { it.id == id }
             }
             currentOffset--
+            updateAllExpensesName()
         }
     }
 
@@ -181,6 +199,10 @@ class MainViewModel @Inject constructor(
         _showAlertDialog.value = alertDialogData
     }
 
+    fun setDropdownExpanded(isExpanded: Boolean) {
+        _isDropdownExpanded.value = isExpanded
+    }
+
     private suspend fun addExpense(name: String, amount: Double) {
         expenseRepository.addExpense(name = name, amount = amount)
         expenseRepository.getLastExpense()?.let {
@@ -190,8 +212,9 @@ class MainViewModel @Inject constructor(
             }
         }
         currentOffset++
-        _expenseType.value = ""
-        _amount.value = ""
+        _expenseType.value = TextFieldValue()
+        _amount.value = TextFieldValue()
+        updateAllExpensesName()
     }
 
     private fun loadMonthAndYears() {
@@ -235,11 +258,20 @@ class MainViewModel @Inject constructor(
             }
     }
 
+    private fun updateAllExpensesName() {
+        viewModelScope.launch(ioDispatcher) {
+            allExpensesNames.clear()
+            allExpensesNames.addAll(expenseRepository.getAllExpensesName())
+        }
+    }
+
     companion object {
         private const val RECENT_EXPENSES_FETCH_LIMIT = 10
         private const val ALL_TIME_EXPENSES = "All time"
         private const val EXPENSE_NAME_CHAR_LIMIT = 25
         private const val EXPENSE_AMOUNT_CHAR_LIMIT = 8
+        private const val MAX_NUMBER_OF_EXPENSE_TYPE_SUGGESTION = 3
+        private const val EXPENSE_TYPE_DROPDOWN_DEBOUNCE_TIME = 300L
         const val NUMBER_OF_ROWS_OF_RECENT_EXPENSES = 3
         const val SPACING_BETWEEN_ROWS_OF_RECENT_EXPENSES = 15
         const val RECENT_EXPENSE_SINGLE_ITEM_HEIGHT = 45

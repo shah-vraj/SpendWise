@@ -56,6 +56,7 @@ import com.vraj.spendwise.ui.base.BaseButton
 import com.vraj.spendwise.ui.base.BaseConfirmationDialog
 import com.vraj.spendwise.ui.base.BaseModalBottomSheet
 import com.vraj.spendwise.ui.base.BaseTextField
+import com.vraj.spendwise.ui.base.BaseTextFieldWithDropdown
 import com.vraj.spendwise.ui.model.AlertDialogData
 import com.vraj.spendwise.util.AppToast
 import com.vraj.spendwise.util.MainScreen
@@ -121,12 +122,14 @@ private fun ExpenseInputBlock(viewModel: MainViewModel, modifier: Modifier = Mod
     val focusManager = LocalFocusManager.current
     val expenseType by viewModel.expenseType.collectAsState()
     val amount by viewModel.amount.collectAsState()
+    val expenseTypeDropdownItems by viewModel.expenseTypeDropdownItems.collectAsState()
+    val isDropdownExpanded by viewModel.isDropdownExpanded.collectAsState()
 
     Column(
         verticalArrangement = Arrangement.spacedBy(20.dp),
         modifier = modifier.fillMaxWidth()
     ) {
-        BaseTextField(
+        BaseTextFieldWithDropdown(
             textFieldValue = expenseType,
             onValueChanged = viewModel::setExpenseType,
             placeholder = stringResource(R.string.txt_expense_type),
@@ -137,7 +140,10 @@ private fun ExpenseInputBlock(viewModel: MainViewModel, modifier: Modifier = Mod
             ),
             keyboardActions = KeyboardActions(
                 onNext = { focusManager.moveFocus(FocusDirection.Down) }
-            )
+            ),
+            onDismissRequest = { viewModel.setDropdownExpanded(false) },
+            isDropdownExpanded = isDropdownExpanded,
+            list = expenseTypeDropdownItems
         )
 
         BaseTextField(
