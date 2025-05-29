@@ -15,17 +15,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusState
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun BaseTextField(
     modifier: Modifier = Modifier,
-    textFieldValue: String = "",
-    onValueChanged: (String) -> Unit = { },
+    textFieldValue: TextFieldValue = TextFieldValue(),
+    onValueChanged: (TextFieldValue) -> Unit = { },
     placeholder: String = "",
     keyboardOptions: KeyboardOptions = KeyboardOptions(),
-    keyboardActions: KeyboardActions = KeyboardActions()
+    keyboardActions: KeyboardActions = KeyboardActions(),
+    onFocusChanged: (FocusState) -> Unit = { }
 ) {
     Box(
         modifier = modifier
@@ -44,7 +48,7 @@ fun BaseTextField(
             keyboardActions = keyboardActions,
             decorationBox = { innerTextField ->
                 Box {
-                    if (textFieldValue.isEmpty()) {
+                    if (textFieldValue.text.isEmpty()) {
                         Text(
                             text = placeholder,
                             style = MaterialTheme.typography.bodyMedium,
@@ -60,6 +64,7 @@ fun BaseTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.Center)
+                .onFocusChanged(onFocusChanged)
         )
     }
 }
