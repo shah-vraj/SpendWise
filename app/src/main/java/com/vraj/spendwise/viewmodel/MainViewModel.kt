@@ -74,6 +74,11 @@ class MainViewModel @Inject constructor(
 
     private val _isDropdownExpanded = MutableStateFlow(false)
     val isDropdownExpanded = _isDropdownExpanded.asStateFlow()
+    
+    private val _isEntityEditInProgress = MutableStateFlow(false)
+    val isEntityEditInProgress = _isEntityEditInProgress.asStateFlow()
+    
+    private var entityIdToEdit: Int = -1
 
     private val currentMonthAndYearString: String
         get() = SimpleDateFormat("LLLL yyyy", Locale.getDefault())
@@ -132,6 +137,11 @@ class MainViewModel @Inject constructor(
         }
 
         viewModelScope.launch(ioDispatcher) {
+            if (isEntityEditInProgress.value) {
+                editExpense(entityIdToEdit, expenseType, amount)
+                _showToast.value = AppToast.Success(R.string.edit_expense_success)
+                return@launch
+            }
             addExpense(expenseType, amount)
             _showToast.value = AppToast.Success(R.string.add_expense_success)
         }
@@ -201,6 +211,29 @@ class MainViewModel @Inject constructor(
 
     fun setDropdownExpanded(isExpanded: Boolean) {
         _isDropdownExpanded.value = isExpanded
+    }
+
+    fun edit(entity: ExpenseEntity) {
+        _isEntityEditInProgress.value = true
+        entityIdToEdit = entity.id
+        _expenseType.value = TextFieldValue(entity.name)
+        _amount.value = TextFieldValue(entity.amountString)
+    }
+
+    fun clearEditMode() {
+        _isEntityEditInProgress.value = false
+        entityIdToEdit = -1
+        _expenseType.value = TextFieldValue()
+        _amount.value = TextFieldValue()
+    }
+
+    private suspend fun editExpense(id: Int, name: String, amount: Double) {
+        expenseRepository.editExpense(id, name, amount)
+        _expenses.value = _expenses.value.map {
+            if (it.id == id) it.copy(name = name, amount = amount) else it
+        }
+        clearEditMode()
+        updateAllExpensesName()
     }
 
     private suspend fun addExpense(name: String, amount: Double) {
