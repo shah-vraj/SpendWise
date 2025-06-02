@@ -23,4 +23,5 @@
     <string name="txt_remove_expense_message">Are you sure you want to remove this expense?</string>
     <string name="txt_edit">Edit</string>
     <string name="edit_expense_success">Successfully edited expense</string>
+    <string name="txt_expand_expense_info">You can tap on expense to view more details</string>
 </resources>

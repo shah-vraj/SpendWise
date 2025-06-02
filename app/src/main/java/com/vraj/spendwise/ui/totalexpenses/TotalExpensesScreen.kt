@@ -1,5 +1,6 @@
 package com.vraj.spendwise.ui.totalexpenses
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -43,10 +44,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.vraj.spendwise.R
-import com.vraj.spendwise.data.local.entity.ExpenseEntity
 import com.vraj.spendwise.ui.base.BaseModalBottomSheet
 import com.vraj.spendwise.ui.base.TopBar
 import com.vraj.spendwise.ui.inputexpense.EmptyExpenseView
+import com.vraj.spendwise.ui.inputexpense.HandleToast
+import com.vraj.spendwise.ui.model.ExpenseTotalData
+import com.vraj.spendwise.util.AppToast
+import com.vraj.spendwise.util.extension.toStringByLimitingDecimalDigits
 import com.vraj.spendwise.viewmodel.MainViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -62,12 +66,20 @@ fun TotalExpensesScreen(navHostController: NavHostController, viewModel: MainVie
     }
 
     ShowMonthFilterBottomSheet(viewModel)
+    HandleToast(viewModel)
 
     Scaffold(
         topBar = {
             TopBar(
                 onBackButtonClicked = { navHostController.navigateUp() },
-                centerText = stringResource(R.string.txt_expenses_title)
+                centerText = stringResource(R.string.txt_expenses_title),
+                rightImage = if (filteredExpenses.isEmpty()) {
+                    null
+                } else {
+                    R.drawable.ic_info to {
+                        viewModel.showToast(AppToast.Info(R.string.txt_expand_expense_info))
+                    }
+                }
             )
         }
     ) { paddingValues ->
@@ -113,7 +125,10 @@ fun TotalExpensesScreen(navHostController: NavHostController, viewModel: MainVie
             TotalExpensesBlock(
                 modifier = Modifier.padding(bottom = 20.dp),
                 filteredExpenses = filteredExpenses,
-                overallTotal = overallTotal.toString()
+                overallTotal = overallTotal.toString(),
+                onItemClicked = {
+                    viewModel.setFilteredExpenseExpanded(!it.isExpanded, it.name)
+                }
             )
         }
     }
@@ -213,8 +228,9 @@ private fun MonthAndYearList(
 @Composable
 private fun TotalExpensesBlock(
     modifier: Modifier = Modifier,
-    filteredExpenses: List<ExpenseEntity>,
-    overallTotal: String
+    filteredExpenses: List<ExpenseTotalData>,
+    overallTotal: String,
+    onItemClicked: (ExpenseTotalData) -> Unit
 ) {
     if (filteredExpenses.isEmpty()) {
         Box(
@@ -239,7 +255,11 @@ private fun TotalExpensesBlock(
                 .padding(bottom = 15.dp)
         ) {
             ExpenseTotalListHeader()
-            ExpenseTotalList(expenses = filteredExpenses)
+
+            ExpenseTotalList(
+                expenses = filteredExpenses,
+                onItemClicked = onItemClicked
+            )
         }
 
         OverallTotalBlock(overallTotal = overallTotal)
@@ -269,7 +289,13 @@ private fun ExpenseTotalListHeader(modifier: Modifier = Modifier) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun ExpenseTotalList(modifier: Modifier = Modifier, expenses: List<ExpenseEntity>) {
+private fun ExpenseTotalList(
+    modifier: Modifier = Modifier,
+    expenses: List<ExpenseTotalData>,
+    onItemClicked: (ExpenseTotalData) -> Unit
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(15.dp),
         modifier = modifier
@@ -277,30 +303,74 @@ private fun ExpenseTotalList(modifier: Modifier = Modifier, expenses: List<Expen
             .fillMaxHeight(0.85f)
     ) {
         items(expenses) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(MaterialTheme.shapes.small)
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(16.dp)
+                    .background(MaterialTheme.colorScheme.tertiary)
+                    .clickable(interactionSource, null) { onItemClicked(it) }
             ) {
-                Text(
-                    text = it.name,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onBackground,
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .padding(end = 16.dp)
-                        .weight(1f)
-                        .basicMarquee(iterations = 2)
-                )
+                        .fillMaxWidth()
+                        .clip(MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = it.name,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier
+                            .padding(end = 16.dp)
+                            .weight(1f)
+                            .basicMarquee(iterations = 2)
+                    )
 
-                Text(
-                    text = it.amountString,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
+                    Text(
+                        text = it.amount.toStringByLimitingDecimalDigits(3),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+
+                AnimatedVisibility(it.isExpanded) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        it.relatedExpenses.groupBy { it.date.dayOfMonth }.forEach { (_, entities) ->
+                            Text(
+                                text = entities.firstOrNull()?.createdDateFormatted.orEmpty(),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+
+                            entities.forEach {
+                                Row(
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = it.name,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onBackground,
+                                        modifier = Modifier
+                                            .padding(end = 16.dp)
+                                            .weight(1f)
+                                            .basicMarquee(iterations = 2)
+                                    )
+
+                                    Text(
+                                        text = it.amount.toStringByLimitingDecimalDigits(3),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onBackground
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

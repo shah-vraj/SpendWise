@@ -8,6 +8,7 @@ import com.vraj.spendwise.data.local.repository.ExpenseRepository
 import com.vraj.spendwise.di.IoDispatcher
 import com.vraj.spendwise.ui.base.BaseViewModel
 import com.vraj.spendwise.ui.model.AlertDialogData
+import com.vraj.spendwise.ui.model.ExpenseTotalData
 import com.vraj.spendwise.util.AppToast
 import com.vraj.spendwise.util.MonthOfYear
 import com.vraj.spendwise.util.extension.isLastCharValid
@@ -63,7 +64,7 @@ class MainViewModel @Inject constructor(
     private val _selectedMonthAndYear = MutableStateFlow("")
     val selectedMonthAndYear = _selectedMonthAndYear.asStateFlow()
 
-    private val _filteredExpenses = MutableStateFlow<List<ExpenseEntity>>(emptyList())
+    private val _filteredExpenses = MutableStateFlow<List<ExpenseTotalData>>(emptyList())
     val filteredExpenses = _filteredExpenses.asStateFlow()
 
     private val _showAlertDialog = MutableStateFlow<AlertDialogData?>(null)
@@ -227,6 +228,12 @@ class MainViewModel @Inject constructor(
         _amount.value = TextFieldValue()
     }
 
+    fun setFilteredExpenseExpanded(isExpanded: Boolean, name: String) {
+        _filteredExpenses.value = _filteredExpenses.value.map {
+            it.copy(isExpanded = if (it.name == name) isExpanded else it.isExpanded)
+        }
+    }
+
     private suspend fun editExpense(id: Int, name: String, amount: Double) {
         expenseRepository.editExpense(id, name, amount)
         _expenses.value = _expenses.value.map {
@@ -279,13 +286,14 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun List<ExpenseEntity>.groupByExpenses(): List<ExpenseEntity> = buildList {
+    private fun List<ExpenseEntity>.groupByExpenses(): List<ExpenseTotalData> = buildList {
         this@groupByExpenses.groupBy(ExpenseEntity::name)
             .mapValues {
                 add(
-                    ExpenseEntity(
+                    ExpenseTotalData(
                         name = it.key,
-                        amount = it.value.sumOf { entity -> entity.amount }
+                        amount = it.value.sumOf { entity -> entity.amount },
+                        relatedExpenses = it.value
                     )
                 )
             }
