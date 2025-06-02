@@ -20,7 +20,8 @@ private val lightColorScheme = lightColorScheme(
     secondary = RegularGreen,
     onSecondary = Color.White,
     background = LightGray,
-    onBackground = RegularBlue
+    onBackground = RegularBlue,
+    tertiary = BlackO20
 )
 
 private val darkColorScheme = darkColorScheme(
@@ -30,7 +31,8 @@ private val darkColorScheme = darkColorScheme(
     secondary = DarkGreen,
     onSecondary = Color.White,
     background = LightGray,
-    onBackground = DarkBlue
+    onBackground = DarkBlue,
+    tertiary = WhiteO70
 )
 
 @Composable

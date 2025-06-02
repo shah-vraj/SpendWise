@@ -1,5 +1,6 @@
 package com.vraj.spendwise.ui.inputexpense
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -318,13 +319,14 @@ private fun RecentExpensesGridBlock(
 }
 
 @Composable
-private fun HandleToast(viewModel: MainViewModel) {
+fun HandleToast(viewModel: MainViewModel) {
     val context = LocalContext.current
     val showToast by viewModel.showToast.collectAsState()
 
     when (val toast = showToast) {
         is AppToast.Error -> Toasty.error(context, toast.message).show()
         is AppToast.Success -> Toasty.success(context, toast.message).show()
+        is AppToast.Info -> Toasty.info(context, toast.message, Toast.LENGTH_LONG).show()
         AppToast.Nothing -> {}
     }.also { viewModel.onToastShown() }
 }
