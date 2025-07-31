@@ -46,22 +46,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.vraj.spendwise.R
 import com.vraj.spendwise.ui.base.BaseButton
 import com.vraj.spendwise.ui.base.BaseConfirmationDialog
 import com.vraj.spendwise.ui.base.BaseTextField
 import com.vraj.spendwise.ui.base.BaseTextFieldWithDropdown
+import com.vraj.spendwise.ui.base.BaseViewModel
 import com.vraj.spendwise.util.AppToast
 import com.vraj.spendwise.util.MainScreen
-import com.vraj.spendwise.viewmodel.MainViewModel
-import com.vraj.spendwise.viewmodel.MainViewModel.Companion.NUMBER_OF_ROWS_OF_RECENT_EXPENSES
-import com.vraj.spendwise.viewmodel.MainViewModel.Companion.RECENT_EXPENSE_SINGLE_ITEM_HEIGHT
-import com.vraj.spendwise.viewmodel.MainViewModel.Companion.SPACING_BETWEEN_ROWS_OF_RECENT_EXPENSES
+import com.vraj.spendwise.viewmodel.InputExpenseViewModel
+import com.vraj.spendwise.viewmodel.InputExpenseViewModel.Companion.NUMBER_OF_ROWS_OF_RECENT_EXPENSES
+import com.vraj.spendwise.viewmodel.InputExpenseViewModel.Companion.RECENT_EXPENSE_SINGLE_ITEM_HEIGHT
+import com.vraj.spendwise.viewmodel.InputExpenseViewModel.Companion.SPACING_BETWEEN_ROWS_OF_RECENT_EXPENSES
 import es.dmoral.toasty.Toasty
 
 @Composable
-fun InputExpenseScreen(navHostController: NavHostController, viewModel: MainViewModel) {
+fun InputExpenseScreen(navHostController: NavHostController) {
+    val viewModel: InputExpenseViewModel = hiltViewModel()
     val scrollState = rememberScrollState()
     HandleToast(viewModel)
     HandleAlertDialog(viewModel)
@@ -110,7 +113,7 @@ fun InputExpenseScreen(navHostController: NavHostController, viewModel: MainView
 }
 
 @Composable
-private fun ExpenseInputBlock(viewModel: MainViewModel, modifier: Modifier = Modifier) {
+private fun ExpenseInputBlock(viewModel: InputExpenseViewModel, modifier: Modifier = Modifier) {
     val focusManager = LocalFocusManager.current
     val expenseType by viewModel.expenseType.collectAsState()
     val amount by viewModel.amount.collectAsState()
@@ -156,7 +159,7 @@ private fun ExpenseInputBlock(viewModel: MainViewModel, modifier: Modifier = Mod
 @Composable
 private fun AddOrViewExpenseButtonsBlock(
     navHostController: NavHostController,
-    viewModel: MainViewModel,
+    viewModel: InputExpenseViewModel,
     modifier: Modifier = Modifier
 ) {
     val focusManager = LocalFocusManager.current
@@ -204,7 +207,7 @@ private fun AddOrViewExpenseButtonsBlock(
 }
 
 @Composable
-private fun RecentExpensesListBlock(viewModel: MainViewModel, modifier: Modifier) {
+private fun RecentExpensesListBlock(viewModel: InputExpenseViewModel, modifier: Modifier) {
     Column(
         verticalArrangement = Arrangement.spacedBy(15.dp),
         modifier = modifier.fillMaxWidth()
@@ -216,7 +219,7 @@ private fun RecentExpensesListBlock(viewModel: MainViewModel, modifier: Modifier
 
 @Composable
 private fun RecentExpensesTitleBlock(
-    viewModel: MainViewModel,
+    viewModel: InputExpenseViewModel,
     modifier: Modifier = Modifier
 ) {
     val hasMoreExpenseToLoad by viewModel.hasMoreExpenseToLoad.collectAsState()
@@ -251,7 +254,7 @@ private fun RecentExpensesTitleBlock(
 
 @Composable
 private fun RecentExpensesGridBlock(
-    viewModel: MainViewModel,
+    viewModel: InputExpenseViewModel,
     modifier: Modifier = Modifier
 ) {
     val expenses by viewModel.expenses.collectAsState()
@@ -319,7 +322,7 @@ private fun RecentExpensesGridBlock(
 }
 
 @Composable
-fun HandleToast(viewModel: MainViewModel) {
+fun HandleToast(viewModel: BaseViewModel) {
     val context = LocalContext.current
     val showToast by viewModel.showToast.collectAsState()
 
@@ -332,7 +335,7 @@ fun HandleToast(viewModel: MainViewModel) {
 }
 
 @Composable
-fun HandleAlertDialog(viewModel: MainViewModel) {
+fun HandleAlertDialog(viewModel: BaseViewModel) {
     val alertDialogData by viewModel.showAlertDialog.collectAsState()
 
     alertDialogData?.let {

@@ -9,12 +9,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -28,7 +28,6 @@ import com.vraj.spendwise.ui.inputexpense.InputExpenseScreen
 import com.vraj.spendwise.ui.theme.SpendWiseTheme
 import com.vraj.spendwise.ui.totalexpenses.TotalExpensesScreen
 import com.vraj.spendwise.util.MainScreen
-import com.vraj.spendwise.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,23 +50,25 @@ class MainActivity @Inject constructor() : BaseComposeActivity() {
         setContent {
             SpendWiseTheme {
                 val navHostController = rememberNavController()
-                val viewModel = hiltViewModel<MainViewModel>()
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.primary)
-                ) {
-                    MainScreens(
-                        navHostController = navHostController,
-                        viewModel = viewModel,
-                        modifier = Modifier.padding(bottom = 40.dp)
-                    )
 
+                Scaffold { paddingValues ->
                     Box(
-                        contentAlignment = Alignment.BottomCenter,
-                        modifier = Modifier.fillMaxSize(),
-                        content = { BannerAd() }
-                    )
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.primary)
+                            .padding(paddingValues)
+                    ) {
+                        MainScreens(
+                            navHostController = navHostController,
+                            modifier = Modifier.padding(bottom = 40.dp)
+                        )
+
+                        Box(
+                            contentAlignment = Alignment.BottomCenter,
+                            modifier = Modifier.fillMaxSize(),
+                            content = { BannerAd() }
+                        )
+                    }
                 }
             }
         }
@@ -103,21 +104,17 @@ class MainActivity @Inject constructor() : BaseComposeActivity() {
     }
 
     @Composable
-    private fun MainScreens(
-        navHostController: NavHostController,
-        viewModel: MainViewModel,
-        modifier: Modifier = Modifier
-    ) {
+    private fun MainScreens(navHostController: NavHostController, modifier: Modifier = Modifier) {
         NavHost(
             navController = navHostController,
             startDestination = MainScreen.InputExpenseScreen.route,
             modifier = modifier
         ) {
             composable(MainScreen.InputExpenseScreen.route) {
-                InputExpenseScreen(navHostController, viewModel)
+                InputExpenseScreen(navHostController)
             }
             composable(MainScreen.TotalExpensesScreen.route) {
-                TotalExpensesScreen(navHostController, viewModel)
+                TotalExpensesScreen(navHostController)
             }
         }
     }

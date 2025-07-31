@@ -42,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.vraj.spendwise.R
 import com.vraj.spendwise.ui.base.BaseModalBottomSheet
@@ -51,12 +52,13 @@ import com.vraj.spendwise.ui.inputexpense.HandleToast
 import com.vraj.spendwise.ui.model.ExpenseTotalData
 import com.vraj.spendwise.util.AppToast
 import com.vraj.spendwise.util.extension.toStringByLimitingDecimalDigits
-import com.vraj.spendwise.viewmodel.MainViewModel
+import com.vraj.spendwise.viewmodel.TotalExpenseViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
-fun TotalExpensesScreen(navHostController: NavHostController, viewModel: MainViewModel) {
+fun TotalExpensesScreen(navHostController: NavHostController) {
+    val viewModel: TotalExpenseViewModel = hiltViewModel()
     val selectedMonthAndYear by viewModel.selectedMonthAndYear.collectAsState()
     val filteredExpenses by viewModel.filteredExpenses.collectAsState()
     val overallTotal by viewModel.overallTotal.collectAsState(initial = 0)
@@ -136,7 +138,7 @@ fun TotalExpensesScreen(navHostController: NavHostController, viewModel: MainVie
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ShowMonthFilterBottomSheet(viewModel: MainViewModel) {
+private fun ShowMonthFilterBottomSheet(viewModel: TotalExpenseViewModel) {
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
     val showMonthFilterBottomSheet by viewModel.showMonthFilterBottomSheet.collectAsState()

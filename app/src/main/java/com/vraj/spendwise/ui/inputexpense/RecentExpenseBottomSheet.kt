@@ -29,13 +29,13 @@ import com.vraj.spendwise.ui.base.BaseButton
 import com.vraj.spendwise.ui.base.BaseModalBottomSheet
 import com.vraj.spendwise.ui.model.AlertDialogData
 import com.vraj.spendwise.util.AppToast
-import com.vraj.spendwise.viewmodel.MainViewModel
+import com.vraj.spendwise.viewmodel.InputExpenseViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecentExpenseBottomSheet(viewModel: MainViewModel) {
+fun RecentExpenseBottomSheet(viewModel: InputExpenseViewModel) {
     val sheetState = rememberModalBottomSheetState()
     val expenseBottomSheetState by viewModel.expenseBottomSheetState.collectAsState()
     val expenseEntity by viewModel.expenseBottomSheetEntity.collectAsState()
@@ -112,7 +112,7 @@ private fun Header(expenseEntity: ExpenseEntity, modifier: Modifier = Modifier) 
 private fun ActionButtons(
     expenseEntity: ExpenseEntity,
     sheetState: SheetState,
-    viewModel: MainViewModel,
+    viewModel: InputExpenseViewModel,
     modifier: Modifier = Modifier
 ) {
     val scope = rememberCoroutineScope()
@@ -182,7 +182,7 @@ private fun hideBottomSheetWithAnimation(
 }
 
 private fun onHideBottomSheetForAdd(
-    viewModel: MainViewModel,
+    viewModel: InputExpenseViewModel,
     expenseEntity: ExpenseEntity,
     getStringResource: (Int) -> String
 ) {
@@ -204,7 +204,7 @@ private fun onHideBottomSheetForAdd(
 }
 
 private fun onHideBottomSheetForRemove(
-    viewModel: MainViewModel,
+    viewModel: InputExpenseViewModel,
     expenseEntity: ExpenseEntity,
     getStringResource: (Int) -> String
 ) {
