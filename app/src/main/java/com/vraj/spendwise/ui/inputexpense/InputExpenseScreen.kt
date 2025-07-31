@@ -1,6 +1,5 @@
 package com.vraj.spendwise.ui.inputexpense
 
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,13 +11,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -32,10 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -49,18 +44,17 @@ import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.vraj.spendwise.R
+import com.vraj.spendwise.ui.EmptyExpenseView
+import com.vraj.spendwise.ui.HandleAlertDialog
+import com.vraj.spendwise.ui.HandleToast
 import com.vraj.spendwise.ui.base.BaseButton
-import com.vraj.spendwise.ui.base.BaseConfirmationDialog
 import com.vraj.spendwise.ui.base.BaseTextField
 import com.vraj.spendwise.ui.base.BaseTextFieldWithDropdown
-import com.vraj.spendwise.ui.base.BaseViewModel
-import com.vraj.spendwise.util.AppToast
 import com.vraj.spendwise.util.MainScreen
 import com.vraj.spendwise.viewmodel.InputExpenseViewModel
 import com.vraj.spendwise.viewmodel.InputExpenseViewModel.Companion.NUMBER_OF_ROWS_OF_RECENT_EXPENSES
 import com.vraj.spendwise.viewmodel.InputExpenseViewModel.Companion.RECENT_EXPENSE_SINGLE_ITEM_HEIGHT
 import com.vraj.spendwise.viewmodel.InputExpenseViewModel.Companion.SPACING_BETWEEN_ROWS_OF_RECENT_EXPENSES
-import es.dmoral.toasty.Toasty
 
 @Composable
 fun InputExpenseScreen(navHostController: NavHostController) {
@@ -76,16 +70,14 @@ fun InputExpenseScreen(navHostController: NavHostController) {
             .fillMaxSize()
             .verticalScroll(scrollState)
             .padding(horizontal = 16.dp)
+            .padding(top = 20.dp)
     ) {
         Image(
             painter = painterResource(id = R.drawable.ic_app_icon_medium),
             contentDescription = "App icon at the top",
             contentScale = ContentScale.Fit,
             alignment = Alignment.Center,
-            modifier = Modifier
-                .height(150.dp)
-                .width(150.dp)
-                .padding(top = 20.dp)
+            modifier = Modifier.size(150.dp)
         )
 
         Text(
@@ -105,16 +97,20 @@ fun InputExpenseScreen(navHostController: NavHostController) {
             modifier = Modifier.padding(top = 30.dp)
         )
 
-        RecentExpensesListBlock(
-            viewModel = viewModel,
-            modifier = Modifier.padding(top = 48.dp, bottom = 30.dp)
-        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(15.dp),
+            modifier = Modifier
+                .padding(top = 48.dp, bottom = 30.dp)
+                .fillMaxWidth()
+        ) {
+            RecentExpensesTitleBlock(viewModel)
+            RecentExpensesGridBlock(viewModel)
+        }
     }
 }
 
 @Composable
 private fun ExpenseInputBlock(viewModel: InputExpenseViewModel, modifier: Modifier = Modifier) {
-    val focusManager = LocalFocusManager.current
     val expenseType by viewModel.expenseType.collectAsState()
     val amount by viewModel.amount.collectAsState()
     val expenseTypeDropdownItems by viewModel.expenseTypeDropdownItems.collectAsState()
@@ -133,9 +129,6 @@ private fun ExpenseInputBlock(viewModel: InputExpenseViewModel, modifier: Modifi
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Next
             ),
-            keyboardActions = KeyboardActions(
-                onNext = { focusManager.moveFocus(FocusDirection.Down) }
-            ),
             onDismissRequest = { viewModel.setDropdownExpanded(false) },
             isDropdownExpanded = isDropdownExpanded,
             list = expenseTypeDropdownItems
@@ -148,9 +141,6 @@ private fun ExpenseInputBlock(viewModel: InputExpenseViewModel, modifier: Modifi
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Decimal,
                 imeAction = ImeAction.Done
-            ),
-            keyboardActions = KeyboardActions(
-                onNext = { focusManager.clearFocus() }
             )
         )
     }
@@ -167,18 +157,12 @@ private fun AddOrViewExpenseButtonsBlock(
 
     val addEditButtonTitle by remember {
         derivedStateOf {
-            if (isEntityEditInProgress)
-                R.string.txt_confirm
-            else
-                R.string.txt_add_expense
+            if (isEntityEditInProgress) R.string.txt_confirm else R.string.txt_add_expense
         }
     }
     val showOrCancelEditButtonTitle by remember {
         derivedStateOf {
-            if (isEntityEditInProgress)
-                R.string.txt_cancel
-            else
-                R.string.txt_show_expense
+            if (isEntityEditInProgress) R.string.txt_cancel else R.string.txt_show_expense
         }
     }
 
@@ -203,17 +187,6 @@ private fun AddOrViewExpenseButtonsBlock(
             }
             navHostController.navigate(MainScreen.TotalExpensesScreen.route)
         }
-    }
-}
-
-@Composable
-private fun RecentExpensesListBlock(viewModel: InputExpenseViewModel, modifier: Modifier) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(15.dp),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        RecentExpensesTitleBlock(viewModel)
-        RecentExpensesGridBlock(viewModel)
     }
 }
 
@@ -320,58 +293,3 @@ private fun RecentExpensesGridBlock(
         }
     }
 }
-
-@Composable
-fun HandleToast(viewModel: BaseViewModel) {
-    val context = LocalContext.current
-    val showToast by viewModel.showToast.collectAsState()
-
-    when (val toast = showToast) {
-        is AppToast.Error -> Toasty.error(context, toast.message).show()
-        is AppToast.Success -> Toasty.success(context, toast.message).show()
-        is AppToast.Info -> Toasty.info(context, toast.message, Toast.LENGTH_LONG).show()
-        AppToast.Nothing -> {}
-    }.also { viewModel.onToastShown() }
-}
-
-@Composable
-fun HandleAlertDialog(viewModel: BaseViewModel) {
-    val alertDialogData by viewModel.showAlertDialog.collectAsState()
-
-    alertDialogData?.let {
-        BaseConfirmationDialog(
-            title = it.title,
-            message = it.message,
-            subMessage = it.subMessage,
-            onConfirm = { it.onConfirmAction() },
-            onCancel = { viewModel.showAlertDialog(null) }
-        )
-    }
-}
-
-
-
-@Composable
-fun EmptyExpenseView(modifier: Modifier) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_no_expense_added),
-            contentDescription = "",
-            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
-            modifier = Modifier
-                .padding(vertical = 10.dp)
-                .fillMaxWidth()
-                .height(60.dp)
-        )
-
-        Text(
-            text = stringResource(id = R.string.txt_no_expense_added),
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onPrimary
-        )
-    }
-}
-

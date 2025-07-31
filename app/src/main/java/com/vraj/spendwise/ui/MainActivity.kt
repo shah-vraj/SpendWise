@@ -38,14 +38,9 @@ import javax.inject.Inject
 class MainActivity @Inject constructor() : BaseComposeActivity() {
 
     private var adView: AdView? = null
-    private val backgroundScope by lazy { CoroutineScope(Dispatchers.IO) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        backgroundScope.launch {
-            MobileAds.initialize(this@MainActivity) { }
-        }
-        loadBannerAd()
 
         setContent {
             SpendWiseTheme {
@@ -72,7 +67,33 @@ class MainActivity @Inject constructor() : BaseComposeActivity() {
                 }
             }
         }
+
+        initializeBannerAd()
         hideStatusBar()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        adView?.pause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        adView?.resume()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        adView?.destroy()
+    }
+
+    private fun initializeBannerAd() {
+        CoroutineScope(Dispatchers.IO).launch {
+            MobileAds.initialize(this@MainActivity) { }
+            runOnUiThread {
+                loadBannerAd()
+            }
+        }
     }
 
     private fun loadBannerAd() {
