@@ -58,7 +58,6 @@ import com.vraj.spendwise.viewmodel.MainViewModel
 import com.vraj.spendwise.viewmodel.MainViewModel.Companion.NUMBER_OF_ROWS_OF_RECENT_EXPENSES
 import com.vraj.spendwise.viewmodel.MainViewModel.Companion.RECENT_EXPENSE_SINGLE_ITEM_HEIGHT
 import com.vraj.spendwise.viewmodel.MainViewModel.Companion.SPACING_BETWEEN_ROWS_OF_RECENT_EXPENSES
-import es.dmoral.toasty.Toasty
 
 @Composable
 fun InputExpenseScreen(navHostController: NavHostController, viewModel: MainViewModel) {
@@ -322,13 +321,15 @@ private fun RecentExpensesGridBlock(
 fun HandleToast(viewModel: MainViewModel) {
     val context = LocalContext.current
     val showToast by viewModel.showToast.collectAsState()
+    Toast.makeText(context, "", Toast.LENGTH_SHORT).show()
+    viewModel.onToastShown()
 
-    when (val toast = showToast) {
-        is AppToast.Error -> Toasty.error(context, toast.message).show()
-        is AppToast.Success -> Toasty.success(context, toast.message).show()
-        is AppToast.Info -> Toasty.info(context, toast.message, Toast.LENGTH_LONG).show()
-        AppToast.Nothing -> {}
-    }.also { viewModel.onToastShown() }
+//    when (val toast = showToast) {
+//        is AppToast.Error -> Toasty.error(context, toast.message).show()
+//        is AppToast.Success -> Toasty.success(context, toast.message).show()
+//        is AppToast.Info -> Toasty.info(context, toast.message, Toast.LENGTH_LONG).show()
+//        AppToast.Nothing -> {}
+//    }.also { viewModel.onToastShown() }
 }
 
 @Composable
