@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -22,6 +24,9 @@ import com.vraj.spendwise.R
 import com.vraj.spendwise.ui.base.BaseConfirmationDialog
 import com.vraj.spendwise.ui.base.BaseViewModel
 import com.vraj.spendwise.util.AppToast
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+
 import es.dmoral.toasty.Toasty
 
 @Composable
@@ -73,5 +78,18 @@ fun EmptyExpenseView(modifier: Modifier) {
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onPrimary
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+fun hideBottomSheetWithAnimation(
+    sheetState: SheetState,
+    scope: CoroutineScope,
+    onCompletion: () -> Unit
+) {
+    scope.launch {
+        sheetState.hide()
+    }.invokeOnCompletion {
+        onCompletion()
     }
 }

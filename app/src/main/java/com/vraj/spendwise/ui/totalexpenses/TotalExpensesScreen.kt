@@ -23,7 +23,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -49,12 +48,11 @@ import com.vraj.spendwise.ui.base.BaseModalBottomSheet
 import com.vraj.spendwise.ui.base.TopBar
 import com.vraj.spendwise.ui.EmptyExpenseView
 import com.vraj.spendwise.ui.HandleToast
+import com.vraj.spendwise.ui.hideBottomSheetWithAnimation
 import com.vraj.spendwise.ui.model.ExpenseTotalData
 import com.vraj.spendwise.util.AppToast
 import com.vraj.spendwise.util.extension.toStringByLimitingDecimalDigits
 import com.vraj.spendwise.viewmodel.TotalExpenseViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 @Composable
 fun TotalExpensesScreen(navHostController: NavHostController) {
@@ -166,19 +164,6 @@ private fun ShowMonthFilterBottomSheet(viewModel: TotalExpenseViewModel) {
                 )
             }
         )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-private fun hideBottomSheetWithAnimation(
-    sheetState: SheetState,
-    scope: CoroutineScope,
-    onCompletion: () -> Unit
-) {
-    scope.launch {
-        sheetState.hide()
-    }.invokeOnCompletion {
-        onCompletion()
     }
 }
 

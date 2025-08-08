@@ -2,9 +2,11 @@ package com.vraj.spendwise.ui.inputexpense
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,11 +19,13 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGri
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -30,6 +34,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -44,6 +50,7 @@ import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.vraj.spendwise.R
+import com.vraj.spendwise.data.expense.ExpenseCategoryFinder.getCategory
 import com.vraj.spendwise.ui.EmptyExpenseView
 import com.vraj.spendwise.ui.HandleAlertDialog
 import com.vraj.spendwise.ui.HandleToast
@@ -60,9 +67,11 @@ import com.vraj.spendwise.viewmodel.InputExpenseViewModel.Companion.SPACING_BETW
 fun InputExpenseScreen(navHostController: NavHostController) {
     val viewModel: InputExpenseViewModel = hiltViewModel()
     val scrollState = rememberScrollState()
+
     HandleToast(viewModel)
     HandleAlertDialog(viewModel)
     RecentExpenseBottomSheet(viewModel)
+    CategorySelectionBottomSheet(viewModel)
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -111,38 +120,103 @@ fun InputExpenseScreen(navHostController: NavHostController) {
 
 @Composable
 private fun ExpenseInputBlock(viewModel: InputExpenseViewModel, modifier: Modifier = Modifier) {
+    val interactionSource = remember { MutableInteractionSource() }
     val expenseType by viewModel.expenseType.collectAsState()
     val amount by viewModel.amount.collectAsState()
     val expenseTypeDropdownItems by viewModel.expenseTypeDropdownItems.collectAsState()
     val isDropdownExpanded by viewModel.isDropdownExpanded.collectAsState()
+    val currentCategory by viewModel.currentCategory.collectAsState()
+
+    LaunchedEffect(expenseType) {
+        viewModel.setCurrentCategory(getCategory(expenseType.text))
+    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(20.dp),
         modifier = modifier.fillMaxWidth()
     ) {
-        BaseTextFieldWithDropdown(
-            textFieldValue = expenseType,
-            onValueChanged = viewModel::setExpenseType,
-            placeholder = stringResource(R.string.txt_expense_type),
-            keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.Words,
-                keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Next
-            ),
-            onDismissRequest = { viewModel.setDropdownExpanded(false) },
-            isDropdownExpanded = isDropdownExpanded,
-            list = expenseTypeDropdownItems
-        )
-
-        BaseTextField(
-            textFieldValue = amount,
-            onValueChanged = viewModel::setAmount,
-            placeholder = stringResource(R.string.txt_amount),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Decimal,
-                imeAction = ImeAction.Done
+        Box(
+            contentAlignment = Alignment.CenterEnd,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            BaseTextFieldWithDropdown(
+                textFieldValue = expenseType,
+                onValueChanged = viewModel::setExpenseType,
+                placeholder = stringResource(R.string.txt_expense_type),
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words,
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next
+                ),
+                onDismissRequest = { viewModel.setDropdownExpanded(false) },
+                isDropdownExpanded = isDropdownExpanded,
+                list = expenseTypeDropdownItems
             )
-        )
+        }
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            BaseTextField(
+                textFieldValue = amount,
+                onValueChanged = viewModel::setAmount,
+                placeholder = stringResource(R.string.txt_amount),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Decimal,
+                    imeAction = ImeAction.Done
+                ),
+                modifier = Modifier.weight(0.5f)
+            )
+
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .weight(0.5f)
+                    .height(52.dp)
+                    .clip(MaterialTheme.shapes.small)
+                    .background(Color.Transparent)
+                    .border(
+                        1.5.dp,
+                        MaterialTheme.colorScheme.primaryContainer,
+                        MaterialTheme.shapes.small
+                    )
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) { viewModel.setShowCategorySelectionBottomSheet(true) }
+                    .padding(horizontal = 16.dp)
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth(0.85f)
+                ) {
+                    Image(
+                        painter = painterResource(currentCategory.getIcon()),
+                        contentDescription = "Category type icon",
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
+                        modifier = Modifier.size(32.dp)
+                    )
+
+                    Text(
+                        text = currentCategory.getName(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1
+                    )
+                }
+
+                Image(
+                    painter = painterResource(R.drawable.ic_arrow_down),
+                    contentDescription = "Category selection dropdown icon",
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary)
+                )
+            }
+        }
     }
 }
 

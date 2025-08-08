@@ -27,11 +27,10 @@ import com.vraj.spendwise.R
 import com.vraj.spendwise.data.local.entity.ExpenseEntity
 import com.vraj.spendwise.ui.base.BaseButton
 import com.vraj.spendwise.ui.base.BaseModalBottomSheet
+import com.vraj.spendwise.ui.hideBottomSheetWithAnimation
 import com.vraj.spendwise.ui.model.AlertDialogData
 import com.vraj.spendwise.util.AppToast
 import com.vraj.spendwise.viewmodel.InputExpenseViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -165,19 +164,6 @@ private fun ActionButtons(
                 }
             }
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-private fun hideBottomSheetWithAnimation(
-    sheetState: SheetState,
-    scope: CoroutineScope,
-    onCompletion: () -> Unit
-) {
-    scope.launch {
-        sheetState.hide()
-    }.invokeOnCompletion {
-        onCompletion()
     }
 }
 

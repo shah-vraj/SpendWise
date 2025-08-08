@@ -3,6 +3,7 @@ package com.vraj.spendwise.viewmodel
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
 import com.vraj.spendwise.R
+import com.vraj.spendwise.data.expense.ExpenseCategoryFinder
 import com.vraj.spendwise.data.local.entity.ExpenseEntity
 import com.vraj.spendwise.data.local.repository.ExpenseRepository
 import com.vraj.spendwise.di.IoDispatcher
@@ -50,6 +51,12 @@ class InputExpenseViewModel @Inject constructor(
 
     private val _hasMoreExpenseToLoad = MutableStateFlow(true)
     val hasMoreExpenseToLoad = _hasMoreExpenseToLoad.asStateFlow()
+
+    private val _currentCategory = MutableStateFlow(ExpenseCategoryFinder.Category.OTHER)
+    val currentCategory = _currentCategory.asStateFlow()
+
+    private val _showCategorySelectionBottomSheet = MutableStateFlow(false)
+    val showCategorySelectionBottomSheet = _showCategorySelectionBottomSheet.asStateFlow()
 
     private var currentOffset = 0
     private var entityIdToEdit: Int = -1
@@ -130,6 +137,14 @@ class InputExpenseViewModel @Inject constructor(
 
     fun setDropdownExpanded(isExpanded: Boolean) {
         _isDropdownExpanded.value = isExpanded
+    }
+
+    fun setCurrentCategory(category: ExpenseCategoryFinder.Category) {
+        _currentCategory.value = category
+    }
+
+    fun setShowCategorySelectionBottomSheet(shouldShow: Boolean) {
+        _showCategorySelectionBottomSheet.value = shouldShow
     }
 
     fun addExpense(expenseEntity: ExpenseEntity) {
